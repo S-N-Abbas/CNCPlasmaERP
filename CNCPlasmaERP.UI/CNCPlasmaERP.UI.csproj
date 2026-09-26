@@ -1,0 +1,56 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
+    <PackageReference Include="LiveChartsCore.SkiaSharpView.WPF" Version="2.0.5" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.10">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.11" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.11" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CNCPlasmaERP.Core\CNCPlasmaERP.Core.csproj" />
+    <ProjectReference Include="..\CNCPlasmaERP.Data\CNCPlasmaERP.Data.csproj" />
+    <ProjectReference Include="..\CNCPlasmaERP.Services\CNCPlasmaERP.Services.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Converters\" />
+    <Folder Include="Helpers\" />
+    <Folder Include="Resources\" />
+    <Folder Include="ViewModels\Customers\" />
+    <Folder Include="ViewModels\Dashboard\" />
+    <Folder Include="ViewModels\Expenses\" />
+    <Folder Include="ViewModels\Invoicing\" />
+    <Folder Include="ViewModels\Jobs\" />
+    <Folder Include="ViewModels\Reports\" />
+    <Folder Include="ViewModels\Settings\" />
+    <Folder Include="ViewModels\Stock\" />
+    <Folder Include="ViewModels\Suppliers\" />
+    <Folder Include="ViewModels\Users\" />
+    <Folder Include="ViewModels\Wages\" />
+    <Folder Include="Views\Customers\" />
+    <Folder Include="Views\Dashboard\" />
+    <Folder Include="Views\Expenses\" />
+    <Folder Include="Views\Invoicing\" />
+    <Folder Include="Views\Jobs\" />
+    <Folder Include="Views\Reports\" />
+    <Folder Include="Views\Settings\" />
+    <Folder Include="Views\Stock\" />
+    <Folder Include="Views\Suppliers\" />
+    <Folder Include="Views\Users\" />
+    <Folder Include="Views\Wages\" />
+  </ItemGroup>
+
+</Project>

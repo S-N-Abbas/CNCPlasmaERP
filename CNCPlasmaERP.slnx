@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="CNCPlasmaERP.Core/CNCPlasmaERP.Core.csproj" />
+  <Project Path="CNCPlasmaERP.Data/CNCPlasmaERP.Data.csproj" />
+  <Project Path="CNCPlasmaERP.Services/CNCPlasmaERP.Services.csproj" />
+  <Project Path="CNCPlasmaERP.UI/CNCPlasmaERP.UI.csproj" />
+</Solution>
