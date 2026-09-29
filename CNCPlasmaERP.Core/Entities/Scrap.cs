@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using CNCPlasmaERP.Core.Common;
 
 namespace CNCPlasmaERP.Core.Entities
@@ -16,6 +15,5 @@ namespace CNCPlasmaERP.Core.Entities
         /// <summary>Accumulated unsold scrap weight in Kg.</summary>
         public decimal BalanceKg { get; set; }
 
-        public ICollection<ScrapSale> Sales { get; set; } = new List<ScrapSale>();
     }
 }

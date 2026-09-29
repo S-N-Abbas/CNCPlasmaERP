@@ -28,5 +28,9 @@ namespace CNCPlasmaERP.Core.Entities
 
         public string JobPrefix { get; set; } = "JOB";
         public int CurrentJobSequence { get; set; } = 0;
+
+        public int InvoiceSequenceYear { get; set; }
+        public int JobSequenceYear { get; set; }
+        public int QuotationSequenceYear { get; set; }
     }
 }
