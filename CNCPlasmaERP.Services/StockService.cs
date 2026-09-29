@@ -114,6 +114,49 @@ namespace CNCPlasmaERP.Services
             return usage;
         }
 
+
+        public async Task ReverseJobMaterialUsageAsync(int jobMaterialUsageId)
+        {
+            var usage = await _unitOfWork.JobMaterialUsages.GetByIdAsync(jobMaterialUsageId)
+                ?? throw new KeyNotFoundException($"Job material usage {jobMaterialUsageId} not found.");
+
+            var material = await _unitOfWork.Materials.GetByIdAsync(usage.MaterialId)
+                ?? throw new KeyNotFoundException($"Material {usage.MaterialId} not found.");
+
+            if (usage.ScrapGeneratedKg > 0)
+            {
+                var scrap = await _unitOfWork.Scraps.FirstOrDefaultAsync(s => s.MaterialId == usage.MaterialId);
+
+                if (scrap is null || scrap.BalanceKg < usage.ScrapGeneratedKg)
+                {
+                    var available = scrap?.BalanceKg ?? 0;
+                    _logger.LogWarning(
+                        "Cannot reverse usage {UsageId}: {ScrapKg} Kg of scrap was accrued but only {AvailableKg} Kg remains (some has likely been sold)",
+                        jobMaterialUsageId, usage.ScrapGeneratedKg, available);
+                    throw new CannotReverseUsageException(
+                        $"Cannot reverse this usage — {usage.ScrapGeneratedKg:N3} Kg of scrap was generated but only {available:N3} Kg remains unsold.");
+                }
+
+                scrap.BalanceKg -= usage.ScrapGeneratedKg;
+                _unitOfWork.Scraps.Update(scrap);
+            }
+
+            material.CurrentStockKg += usage.WeightUsedKg;
+            if (usage.SheetsUsed.HasValue && material.CurrentStockCount.HasValue)
+            {
+                material.CurrentStockCount += usage.SheetsUsed.Value;
+            }
+            _unitOfWork.Materials.Update(material);
+
+            _unitOfWork.JobMaterialUsages.Remove(usage); // soft-deleted via BaseEntity — audit trail preserved
+
+            await _unitOfWork.SaveChangesAsync();
+
+            _logger.LogInformation(
+                "Reversed job material usage {UsageId}: restored {WeightKg} Kg to Material {MaterialId}",
+                jobMaterialUsageId, usage.WeightUsedKg, usage.MaterialId);
+        }
+
         /// <summary>
         /// Cost basis for P&amp;L: uses the rate from this material's most recent
         /// purchase (a simple, transparent "last-cost" approach rather than a

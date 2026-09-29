@@ -98,6 +98,8 @@ namespace CNCPlasmaERP.UI
             services.AddScoped<ILedgerService, LedgerService>();
             services.AddScoped<IInvoiceService, InvoiceService>();
 
+            services.AddScoped<IJobService, JobService>();
+
             // TODO: register ViewModels and Views here as they are built
             services.AddTransient<MainWindow>();
         }

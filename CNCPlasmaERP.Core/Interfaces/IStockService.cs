@@ -30,6 +30,16 @@ namespace CNCPlasmaERP.Core.Interfaces
             decimal scrapGeneratedKg,
             string? notes);
 
+
+        /// <summary>
+        /// Reverses a previously recorded job material usage: restores the consumed
+        /// weight/sheets back to stock and removes the corresponding scrap accrual.
+        /// Throws CannotReverseUsageException if the accrued scrap has already been
+        /// partially or fully sold (so it can no longer be cleanly subtracted back).
+        /// </summary>
+        Task ReverseJobMaterialUsageAsync(int jobMaterialUsageId);
+
+
         /// <summary>Records a sale of accumulated scrap. Throws InsufficientScrapException if the balance is too low.</summary>
         Task RecordScrapSaleAsync(ScrapSale sale);
 
