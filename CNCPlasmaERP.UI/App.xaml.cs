@@ -11,6 +11,8 @@ using System;
 using System.Threading.Tasks;
 using System.Windows;
 using CNCPlasmaERP.Core.Enums;
+using CNCPlasmaERP.UI.ViewModels;
+using CNCPlasmaERP.UI.Views;
 
 namespace CNCPlasmaERP.UI
 {
@@ -26,10 +28,11 @@ namespace CNCPlasmaERP.UI
     {
         private IHost? _host;
 
-        protected override void OnStartup(StartupEventArgs e)
+        protected override async void OnStartup(StartupEventArgs e)
         {
-            // Built once, early, purely so Serilog's own bootstrap logger can read
-            // its settings from appsettings.json before the full host exists.
+            // Prevent WPF from shutting down when the LoginWindow closes before MainWindow opens
+            ShutdownMode = ShutdownMode.OnExplicitShutdown;
+
             var bootstrapConfiguration = new ConfigurationBuilder()
                 .SetBasePath(AppContext.BaseDirectory)
                 .AddJsonFile("appsettings.json", optional: false, reloadOnChange: false)
@@ -57,13 +60,30 @@ namespace CNCPlasmaERP.UI
                     })
                     .Build();
 
-                SeedDefaultAdminUserAsync(_host.Services).GetAwaiter().GetResult();
+                // Start host background services if any exist
+                await _host.StartAsync();
 
                 RegisterGlobalExceptionHandlers();
 
                 base.OnStartup(e);
 
+                // Await asynchronously instead of GetAwaiter().GetResult()
+                await SeedDefaultAdminUserAsync(_host.Services);
+
+                var loginWindow = _host.Services.GetRequiredService<LoginWindow>();
+                var loginResult = loginWindow.ShowDialog();
+
+                if (loginResult != true)
+                {
+                    Shutdown();
+                    return;
+                }
+
                 var mainWindow = _host.Services.GetRequiredService<MainWindow>();
+
+                // Re-enable automatic shutdown when the MainWindow closes
+                ShutdownMode = ShutdownMode.OnMainWindowClose;
+                MainWindow = mainWindow;
                 mainWindow.Show();
             }
             catch (Exception ex)
@@ -109,6 +129,8 @@ namespace CNCPlasmaERP.UI
 
             // TODO: register ViewModels and Views here as they are built
             services.AddTransient<MainWindow>();
+            services.AddTransient<LoginViewModel>();
+            services.AddTransient<LoginWindow>();
         }
 
         /// <summary>
