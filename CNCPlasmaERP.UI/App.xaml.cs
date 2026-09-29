@@ -27,6 +27,7 @@ namespace CNCPlasmaERP.UI
     public partial class App : Application
     {
         private IHost? _host;
+        private IServiceScope? _mainScope;
 
         protected override async void OnStartup(StartupEventArgs e)
         {
@@ -70,18 +71,21 @@ namespace CNCPlasmaERP.UI
                 // Await asynchronously instead of GetAwaiter().GetResult()
                 await SeedDefaultAdminUserAsync(_host.Services);
 
-                var loginWindow = _host.Services.GetRequiredService<LoginWindow>();
-                var loginResult = loginWindow.ShowDialog();
-
-                if (loginResult != true)
+                using (var loginScope = _host.Services.CreateScope())
                 {
-                    Shutdown();
-                    return;
+                    var loginWindow = loginScope.ServiceProvider.GetRequiredService<LoginWindow>();
+                    var loginResult = loginWindow.ShowDialog();
+
+                    if (loginResult != true)
+                    {
+                        Shutdown();
+                        return;
+                    }
                 }
 
-                var mainWindow = _host.Services.GetRequiredService<MainWindow>();
+                _mainScope = _host.Services.CreateScope();
+                var mainWindow = _mainScope.ServiceProvider.GetRequiredService<MainWindow>();
 
-                // Re-enable automatic shutdown when the MainWindow closes
                 ShutdownMode = ShutdownMode.OnMainWindowClose;
                 MainWindow = mainWindow;
                 mainWindow.Show();
@@ -131,6 +135,8 @@ namespace CNCPlasmaERP.UI
             services.AddTransient<MainWindow>();
             services.AddTransient<LoginViewModel>();
             services.AddTransient<LoginWindow>();
+            services.AddTransient<MainWindowViewModel>();
+            services.AddTransient<DashboardViewModel>();
         }
 
         /// <summary>
@@ -196,6 +202,7 @@ namespace CNCPlasmaERP.UI
             Log.Information("=== CNC Plasma ERP shutting down ===");
             Log.CloseAndFlush();
             _host?.Dispose();
+            _mainScope?.Dispose();
             base.OnExit(e);
         }
     }

@@ -77,7 +77,8 @@
             <Button Content="Sign In"
                     Style="{StaticResource PrimaryButton}"
                     Command="{Binding LoginCommand}"
-                    IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}"/>
+                    IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}"
+                    IsDefault="True"/>
 
             <TextBlock Text="Signing in..." FontSize="11" Foreground="#667085"
                        HorizontalAlignment="Center" Margin="0,10,0,0"
