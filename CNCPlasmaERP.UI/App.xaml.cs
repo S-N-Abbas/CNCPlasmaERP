@@ -1,14 +1,15 @@
-using System;
-using System.Threading.Tasks;
-using System.Windows;
 using CNCPlasmaERP.Core.Interfaces;
 using CNCPlasmaERP.Data;
 using CNCPlasmaERP.Data.Context;
+using CNCPlasmaERP.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Serilog;
+using System;
+using System.Threading.Tasks;
+using System.Windows;
 
 namespace CNCPlasmaERP.UI
 {
@@ -91,8 +92,10 @@ namespace CNCPlasmaERP.UI
 
             services.AddScoped<IUnitOfWork, UnitOfWork>();
 
-            // TODO: register Services layer classes here as they are built
-            // e.g. services.AddScoped<IStockService, StockService>();
+            services.AddScoped<IStockService, StockService>();
+            services.AddScoped<INumberSequenceService, NumberSequenceService>();
+
+
 
             // TODO: register ViewModels and Views here as they are built
             services.AddTransient<MainWindow>();
