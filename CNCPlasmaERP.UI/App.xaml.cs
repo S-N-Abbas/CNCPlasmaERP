@@ -10,6 +10,7 @@ using Serilog;
 using System;
 using System.Threading.Tasks;
 using System.Windows;
+using CNCPlasmaERP.Core.Enums;
 
 namespace CNCPlasmaERP.UI
 {
@@ -56,6 +57,8 @@ namespace CNCPlasmaERP.UI
                     })
                     .Build();
 
+                SeedDefaultAdminUserAsync(_host.Services).GetAwaiter().GetResult();
+
                 RegisterGlobalExceptionHandlers();
 
                 base.OnStartup(e);
@@ -100,6 +103,10 @@ namespace CNCPlasmaERP.UI
 
             services.AddScoped<IJobService, JobService>();
 
+
+            services.AddScoped<IAuthService, AuthService>();
+            services.AddSingleton<ICurrentUserContext, CurrentUserContext>();
+
             // TODO: register ViewModels and Views here as they are built
             services.AddTransient<MainWindow>();
         }
@@ -143,6 +150,23 @@ namespace CNCPlasmaERP.UI
                 Log.Error(args.Exception, "Unobserved task exception");
                 args.SetObserved();
             };
+        }
+
+        private static async Task SeedDefaultAdminUserAsync(IServiceProvider services)
+        {
+            using var scope = services.CreateScope();
+            var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
+            var authService = scope.ServiceProvider.GetRequiredService<IAuthService>();
+
+            var anyUsers = (await unitOfWork.Users.GetAllAsync()).Count > 0;
+            if (anyUsers)
+            {
+                return;
+            }
+
+            await authService.CreateUserAsync("admin", "Admin@123", "System Administrator", UserRole.Admin);
+
+            Log.Warning("No users existed — created a default account (username: admin, password: Admin@123). Log in and change this password immediately.");
         }
 
         protected override void OnExit(ExitEventArgs e)
