@@ -131,12 +131,19 @@ namespace CNCPlasmaERP.UI
             services.AddScoped<IAuthService, AuthService>();
             services.AddSingleton<ICurrentUserContext, CurrentUserContext>();
 
+
+            services.AddScoped<IMaterialService, MaterialService>();
+            services.AddScoped<ISupplierService, SupplierService>();
+
             // TODO: register ViewModels and Views here as they are built
             services.AddTransient<MainWindow>();
             services.AddTransient<LoginViewModel>();
             services.AddTransient<LoginWindow>();
             services.AddTransient<MainWindowViewModel>();
             services.AddTransient<DashboardViewModel>();
+            services.AddTransient<MaterialsViewModel>();
+            services.AddTransient<StockPurchaseViewModel>();
+            services.AddTransient<StockViewModel>();
         }
 
         /// <summary>

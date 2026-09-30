@@ -1,6 +1,7 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
+using CNCPlasmaERP.Core.Authorization;
 using CNCPlasmaERP.Core.Interfaces;
 using CNCPlasmaERP.UI.Navigation;
 using CNCPlasmaERP.UI.ViewModels.Base;
@@ -32,9 +33,10 @@ namespace CNCPlasmaERP.UI.ViewModels
 
             var allItems = new[]
             {
-                new NavigationItem { Title = "Dashboard", Icon = "🏠", RequiredPermission = null, ViewModelType = typeof(DashboardViewModel) }
+                new NavigationItem { Title = "Dashboard", Icon = "🏠", RequiredPermission = null, ViewModelType = typeof(DashboardViewModel) },
+                new NavigationItem { Title = "Stock", Icon = "📦", RequiredPermission = Permission.ManageStock, ViewModelType = typeof(StockViewModel) }
 
-                // More entries (Stock, Jobs, Customers, Suppliers, Invoicing,
+                // More entries (Jobs, Customers, Suppliers, Invoicing,
                 // Expenses, Wages, Reports, Settings, Users) are added here as
                 // their ViewModels/Views are built in upcoming modules.
             };

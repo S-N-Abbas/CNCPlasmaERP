@@ -45,5 +45,8 @@ namespace CNCPlasmaERP.Core.Interfaces
 
         /// <summary>Active materials at or below their reorder level — feeds the dashboard's low-stock widget.</summary>
         Task<IReadOnlyList<Material>> GetLowStockMaterialsAsync();
+
+        /// <summary>Most recent stock purchases (with Material and Supplier loaded) — for the Stock Purchases history grid.</summary>
+        Task<IReadOnlyList<StockPurchase>> GetRecentPurchasesAsync(int count = 50);
     }
 }

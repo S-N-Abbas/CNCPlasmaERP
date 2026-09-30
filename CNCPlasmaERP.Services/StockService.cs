@@ -50,6 +50,14 @@ namespace CNCPlasmaERP.Services
                 purchase.WeightKg, purchase.MaterialId, purchase.RatePerKg, purchase.SupplierId, material.CurrentStockKg);
         }
 
+        public async Task<IReadOnlyList<StockPurchase>> GetRecentPurchasesAsync(int count = 50) =>
+            await _unitOfWork.StockPurchases.Query()
+            .Include(p => p.Material)
+            .Include(p => p.Supplier)
+            .OrderByDescending(p => p.PurchaseDate)
+            .Take(count)
+            .ToListAsync();
+
         public async Task<JobMaterialUsage> RecordJobMaterialUsageAsync(
             int jobId,
             int materialId,
