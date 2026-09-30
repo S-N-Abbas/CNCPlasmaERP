@@ -33,5 +33,15 @@ namespace CNCPlasmaERP.Services
 
             return supplier;
         }
+
+        public async Task<IReadOnlyList<Supplier>> GetAllAsync() => await _unitOfWork.Suppliers.GetAllAsync();
+
+        public async Task UpdateAsync(Supplier supplier)
+        {
+            _unitOfWork.Suppliers.Update(supplier);
+            await _unitOfWork.SaveChangesAsync();
+
+            _logger.LogInformation("Supplier {SupplierId} updated", supplier.Id);
+        }
     }
 }

@@ -20,6 +20,14 @@
             <views:StockView/>
         </DataTemplate>
 
+        <DataTemplate DataType="{x:Type vm:CustomersViewModel}">
+            <views:CustomersView/>
+        </DataTemplate>
+
+        <DataTemplate DataType="{x:Type vm:SuppliersViewModel}">
+            <views:SuppliersView/>
+        </DataTemplate>
+
         <Style TargetType="Button" x:Key="NavButton">
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="Foreground" Value="#D0D5DD"/>

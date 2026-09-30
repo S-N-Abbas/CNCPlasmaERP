@@ -10,5 +10,9 @@ namespace CNCPlasmaERP.Core.Interfaces
         Task<IReadOnlyList<Supplier>> GetActiveAsync();
 
         Task<Supplier> CreateAsync(Supplier supplier);
+
+        Task<IReadOnlyList<Supplier>> GetAllAsync();
+
+        Task UpdateAsync(Supplier supplier);
     }
 }
