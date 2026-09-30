@@ -6,10 +6,13 @@ using CNCPlasmaERP.UI.ViewModels.Base;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
+using System.Linq;
+using CNCPlasmaERP.UI.Messages;
+using CommunityToolkit.Mvvm.Messaging;
 
 namespace CNCPlasmaERP.UI.ViewModels
 {
-    public partial class StockPurchaseViewModel : ViewModelBase
+    public partial class StockPurchaseViewModel : ViewModelBase, IRecipient<MaterialCreatedMessage>, IRecipient<SupplierCreatedMessage>
     {
         private readonly IStockService _stockService;
         private readonly IMaterialService _materialService;
@@ -27,6 +30,8 @@ namespace CNCPlasmaERP.UI.ViewModels
             _supplierService = supplierService;
 
             _ = LoadAsync();
+
+            WeakReferenceMessenger.Default.RegisterAll(this);
         }
 
         public ObservableCollection<Material> Materials { get; } = new();
@@ -112,6 +117,7 @@ namespace CNCPlasmaERP.UI.ViewModels
                 });
 
                 Suppliers.Add(supplier);
+                WeakReferenceMessenger.Default.Send(new SupplierCreatedMessage(supplier));
                 SelectedSupplier = supplier;
                 NewSupplierName = string.Empty;
             });
@@ -158,6 +164,22 @@ namespace CNCPlasmaERP.UI.ViewModels
                 // Safe: LoadDataAsync is the raw (non-RunBusyAsync-wrapped) helper.
                 await LoadDataAsync();
             });
+        }
+
+        public void Receive(MaterialCreatedMessage message)
+        {
+            if (Materials.All(m => m.Id != message.Value.Id))
+            {
+                Materials.Add(message.Value);
+            }
+        }
+
+        public void Receive(SupplierCreatedMessage message)
+        {
+            if (Suppliers.All(s => s.Id != message.Value.Id))
+            {
+                Suppliers.Add(message.Value);
+            }
         }
     }
 }

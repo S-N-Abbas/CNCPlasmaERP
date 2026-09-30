@@ -8,6 +8,8 @@ using CNCPlasmaERP.UI.ViewModels.Base;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
+using CNCPlasmaERP.UI.Messages;
+using CommunityToolkit.Mvvm.Messaging;
 
 namespace CNCPlasmaERP.UI.ViewModels
 {
@@ -78,6 +80,7 @@ namespace CNCPlasmaERP.UI.ViewModels
 
                 await _materialService.CreateAsync(material);
                 Materials.Add(material);
+                WeakReferenceMessenger.Default.Send(new MaterialCreatedMessage(material));
 
                 NewName = string.Empty;
                 NewGauge = string.Empty;
