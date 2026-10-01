@@ -149,7 +149,8 @@
                                     <DataTemplate>
                                         <Button Content="Remove" Style="{StaticResource SecondaryButton}" Padding="6,4" FontSize="11"
                                                 Command="{Binding DataContext.RemoveUsageCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
-                                                CommandParameter="{Binding}"/>
+                                                CommandParameter="{Binding}"
+                                                IsEnabled="{Binding DataContext.IsBusy, RelativeSource={RelativeSource AncestorType=DataGrid}, Converter={StaticResource InverseBooleanConverter}}"/>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>

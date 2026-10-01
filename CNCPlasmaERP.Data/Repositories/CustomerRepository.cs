@@ -16,6 +16,7 @@ namespace CNCPlasmaERP.Data.Repositories
 
         public async Task<Customer?> GetWithLedgerAsync(int customerId) =>
             await DbSet
+                .AsNoTracking()
                 .Include(c => c.LedgerEntries.OrderByDescending(l => l.EntryDate))
                 .FirstOrDefaultAsync(c => c.Id == customerId);
 

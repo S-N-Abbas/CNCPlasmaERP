@@ -17,6 +17,7 @@ namespace CNCPlasmaERP.Data.Repositories
 
         public async Task<Job?> GetWithDetailsAsync(int jobId) =>
             await DbSet
+                .AsNoTracking()
                 .Include(j => j.Customer)
                 .Include(j => j.MaterialUsages).ThenInclude(u => u.Material)
                 .Include(j => j.Invoice)
