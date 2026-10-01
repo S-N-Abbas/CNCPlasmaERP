@@ -31,6 +31,9 @@ namespace CNCPlasmaERP.Core.Interfaces
 
         Task<Job?> GetJobWithDetailsAsync(int jobId);
 
+        /// <summary>Every job (any status), Customer loaded — for the unfiltered Jobs list.</summary>
+        Task<IReadOnlyList<Job>> GetAllJobsAsync();
+
         Task<IReadOnlyList<Job>> GetJobsByStatusAsync(JobStatus status);
 
         /// <summary>Creates a real Job from a Quotation's estimated charges, linking the two records together.</summary>

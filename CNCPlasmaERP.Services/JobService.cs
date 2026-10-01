@@ -117,6 +117,8 @@ namespace CNCPlasmaERP.Services
 
         public Task<Job?> GetJobWithDetailsAsync(int jobId) => _unitOfWork.Jobs.GetWithDetailsAsync(jobId);
 
+        public Task<IReadOnlyList<Job>> GetAllJobsAsync() => _unitOfWork.Jobs.GetAllWithCustomerAsync();
+
         public Task<IReadOnlyList<Job>> GetJobsByStatusAsync(JobStatus status) => _unitOfWork.Jobs.GetByStatusAsync(status);
 
         public async Task<Job> ConvertQuotationToJobAsync(int quotationId)

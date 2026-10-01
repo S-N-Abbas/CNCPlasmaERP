@@ -23,6 +23,12 @@ namespace CNCPlasmaERP.Data.Repositories
                 .Include(j => j.Quotation)
                 .FirstOrDefaultAsync(j => j.Id == jobId);
 
+        public async Task<IReadOnlyList<Job>> GetAllWithCustomerAsync() =>
+            await DbSet.AsNoTracking()
+                .Include(j => j.Customer)
+                .OrderByDescending(j => j.JobDate)
+                .ToListAsync();
+
         public async Task<IReadOnlyList<Job>> GetByCustomerAsync(int customerId) =>
             await DbSet.AsNoTracking()
                 .Include(j => j.Customer)

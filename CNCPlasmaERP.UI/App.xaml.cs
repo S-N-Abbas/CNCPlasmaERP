@@ -149,6 +149,7 @@ namespace CNCPlasmaERP.UI
             services.AddTransient<CustomerLedgerViewModel>();
             services.AddTransient<CustomersViewModel>();
             services.AddTransient<SuppliersViewModel>();
+            services.AddTransient<JobsViewModel>();
         }
 
         /// <summary>
