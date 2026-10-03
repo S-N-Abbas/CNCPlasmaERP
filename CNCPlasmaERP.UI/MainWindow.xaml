@@ -1,106 +1,121 @@
-<Window x:Class="CNCPlasmaERP.UI.MainWindow"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:vm="clr-namespace:CNCPlasmaERP.UI.ViewModels"
-        xmlns:views="clr-namespace:CNCPlasmaERP.UI.Views"
-        Title="CNC Plasma ERP" Height="720" Width="1200"
-        WindowStartupLocation="CenterScreen"
-        Background="#F4F5F7">
+<mah:MetroWindow x:Class="CNCPlasmaERP.UI.MainWindow"
+                 xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                 xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
+                 xmlns:vm="clr-namespace:CNCPlasmaERP.UI.ViewModels"
+                 xmlns:views="clr-namespace:CNCPlasmaERP.UI.Views"
+                 Title="CNC Plasma ERP"
+                 Height="720"
+                 Width="1200"
+                 WindowStartupLocation="CenterScreen"
+                 TitleAlignment="Left"
+                 SaveWindowPosition="True"
+                 WindowTransitionsEnabled="True"
+                 Background="{DynamicResource MahApps.Brushes.ThemeBackground}">
 
-    <Window.Resources>
-        <!-- Maps a ViewModel type to its View. WPF resolves these automatically
-             whenever a ContentControl's Content is set to a matching ViewModel
-             instance — this is what makes MainWindowViewModel.CurrentViewModel
-             render the right screen with no manual wiring per screen. -->
+    <mah:MetroWindow.Resources>
+        <!-- DataTemplates for ViewModel routing -->
         <DataTemplate DataType="{x:Type vm:DashboardViewModel}">
-            <views:DashboardView/>
+            <views:DashboardView />
         </DataTemplate>
 
         <DataTemplate DataType="{x:Type vm:StockViewModel}">
-            <views:StockView/>
+            <views:StockView />
         </DataTemplate>
 
         <DataTemplate DataType="{x:Type vm:CustomersViewModel}">
-            <views:CustomersView/>
+            <views:CustomersView />
         </DataTemplate>
 
         <DataTemplate DataType="{x:Type vm:SuppliersViewModel}">
-            <views:SuppliersView/>
+            <views:SuppliersView />
         </DataTemplate>
 
         <DataTemplate DataType="{x:Type vm:JobsViewModel}">
-            <views:JobsView/>
+            <views:JobsView />
         </DataTemplate>
 
         <DataTemplate DataType="{x:Type vm:InvoicingViewModel}">
-            <views:InvoicingView/>
+            <views:InvoicingView />
         </DataTemplate>
 
         <DataTemplate DataType="{x:Type vm:ExpensesViewModel}">
-            <views:ExpensesView/>
+            <views:ExpensesView />
         </DataTemplate>
 
         <DataTemplate DataType="{x:Type vm:SettingsViewModel}">
-            <views:SettingsView/>
+            <views:SettingsView />
         </DataTemplate>
-
-        <Style TargetType="Button" x:Key="NavButton">
-            <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="Foreground" Value="#D0D5DD"/>
-            <Setter Property="FontSize" Value="14"/>
-            <Setter Property="Padding" Value="16,12"/>
-            <Setter Property="HorizontalContentAlignment" Value="Left"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border Background="{TemplateBinding Background}" CornerRadius="6" Margin="8,2">
-                            <ContentPresenter/>
-                        </Border>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-            <Style.Triggers>
-                <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="#1F2937"/>
-                    <Setter Property="Foreground" Value="White"/>
-                </Trigger>
-            </Style.Triggers>
-        </Style>
-    </Window.Resources>
+    </mah:MetroWindow.Resources>
 
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="220"/>
-            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="230" />
+            <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
 
-        <!-- Sidebar -->
-        <Border Grid.Column="0" Background="#101828">
+        <!-- Sidebar Navigation -->
+        <Border Grid.Column="0"
+                Background="{DynamicResource MahApps.Brushes.Gray10}"
+                BorderBrush="{DynamicResource MahApps.Brushes.Gray8}"
+                BorderThickness="0,0,1,0">
             <DockPanel LastChildFill="True">
-                <StackPanel DockPanel.Dock="Top" Margin="20,24,20,24">
-                    <TextBlock Text="CNC Plasma ERP" Foreground="White" FontSize="16" FontWeight="Bold"/>
-                    <TextBlock Text="{Binding LoggedInUserDisplay}" Foreground="#98A2B3" FontSize="11" Margin="0,4,0,0"/>
+                <!-- App Brand & User Details -->
+                <StackPanel DockPanel.Dock="Top"
+                            Margin="20,24,20,20">
+                    <TextBlock Text="CNC Plasma ERP"
+                               Foreground="{DynamicResource MahApps.Brushes.ThemeForeground}"
+                               FontSize="17"
+                               FontWeight="Bold" />
+                    <TextBlock Text="{Binding LoggedInUserDisplay}"
+                               Foreground="{DynamicResource MahApps.Brushes.Gray3}"
+                               FontSize="12"
+                               Margin="0,4,0,0" />
                 </StackPanel>
 
-                <Button DockPanel.Dock="Bottom" Content="Logout" Style="{StaticResource NavButton}"
-                        Command="{Binding LogoutCommand}" Margin="8,2,8,20"/>
+                <!-- Logout Action Button -->
+                <Button DockPanel.Dock="Bottom"
+                        Content="Logout"
+                        Style="{StaticResource NavButton}"
+                        Command="{Binding LogoutCommand}"
+                        Margin="8,2,8,20" />
 
-                <ItemsControl ItemsSource="{Binding NavigationItems}">
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <Button Style="{StaticResource NavButton}"
-                                    Content="{Binding Title}"
-                                    Command="{Binding DataContext.NavigateToCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                    CommandParameter="{Binding}"/>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
+                <!-- Navigation Item List -->
+                <ScrollViewer VerticalScrollBarVisibility="Auto"
+                              Focusable="False">
+                    <ItemsControl ItemsSource="{Binding NavigationItems}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Button Content="{Binding Title}"
+                                        Command="{Binding DataContext.NavigateToCommand, RelativeSource={RelativeSource AncestorType=mah:MetroWindow}}"
+                                        CommandParameter="{Binding}">
+                                    <Button.Style>
+                                        <Style TargetType="Button"
+                                               BasedOn="{StaticResource NavButton}">
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsSelected}"
+                                                             Value="True">
+                                                    <Setter Property="Background"
+                                                            Value="{DynamicResource MahApps.Brushes.Accent}" />
+                                                    <Setter Property="Foreground"
+                                                            Value="{DynamicResource MahApps.Brushes.ThemeBackground}" />
+                                                    <Setter Property="FontWeight"
+                                                            Value="SemiBold" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Button.Style>
+                                </Button>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
             </DockPanel>
         </Border>
 
-        <!-- Content area — swaps automatically based on CurrentViewModel's type -->
-        <ContentControl Grid.Column="1" Content="{Binding CurrentViewModel}"/>
+        <!-- Content Area -->
+        <ContentControl Grid.Column="1"
+                        Content="{Binding CurrentViewModel}"
+                        Margin="0" />
     </Grid>
-</Window>
+</mah:MetroWindow>

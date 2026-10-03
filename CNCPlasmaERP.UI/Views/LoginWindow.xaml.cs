@@ -1,9 +1,10 @@
 using System.Windows;
 using CNCPlasmaERP.UI.ViewModels;
+using MahApps.Metro.Controls;
 
 namespace CNCPlasmaERP.UI.Views
 {
-    public partial class LoginWindow : Window
+    public partial class LoginWindow : MetroWindow
     {
         public LoginWindow(LoginViewModel viewModel)
         {
