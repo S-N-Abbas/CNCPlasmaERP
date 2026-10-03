@@ -11,6 +11,7 @@
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
     <PackageReference Include="LiveChartsCore.SkiaSharpView.WPF" Version="2.0.5" />
+    <PackageReference Include="MahApps.Metro" Version="2.4.11" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.10">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -40,17 +41,8 @@
     <Folder Include="ViewModels\Suppliers\" />
     <Folder Include="ViewModels\Users\" />
     <Folder Include="ViewModels\Wages\" />
-    <Folder Include="Views\Customers\" />
-    <Folder Include="Views\Dashboard\" />
-    <Folder Include="Views\Expenses\" />
-    <Folder Include="Views\Invoicing\" />
-    <Folder Include="Views\Jobs\" />
     <Folder Include="Views\Reports\" />
-    <Folder Include="Views\Settings\" />
-    <Folder Include="Views\Stock\" />
-    <Folder Include="Views\Suppliers\" />
     <Folder Include="Views\Users\" />
-    <Folder Include="Views\Wages\" />
   </ItemGroup>
 
   <ItemGroup>

@@ -40,6 +40,10 @@
             <views:ExpensesView/>
         </DataTemplate>
 
+        <DataTemplate DataType="{x:Type vm:SettingsViewModel}">
+            <views:SettingsView/>
+        </DataTemplate>
+
         <Style TargetType="Button" x:Key="NavButton">
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="Foreground" Value="#D0D5DD"/>
