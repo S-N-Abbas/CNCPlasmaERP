@@ -1,0 +1,48 @@
+<UserControl x:Class="CNCPlasmaERP.UI.Views.WagesView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid Margin="24">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="300"/>
+        </Grid.ColumnDefinitions>
+
+        <Border Grid.Column="0" Background="White" CornerRadius="8" BorderBrush="#E4E7EC" BorderThickness="1" Margin="0,0,16,0">
+            <DataGrid ItemsSource="{Binding WagePayments}" AutoGenerateColumns="False" IsReadOnly="True"
+                      HeadersVisibility="Column" GridLinesVisibility="Horizontal" BorderThickness="0" RowHeight="36">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Date" Binding="{Binding ExpenseDate, StringFormat=dd-MMM-yyyy}" Width="100"/>
+                    <DataGridTextColumn Header="Worker" Binding="{Binding PaidTo}" Width="*"/>
+                    <DataGridTextColumn Header="Amount" Binding="{Binding Amount, StringFormat=N2}" Width="90"/>
+                    <DataGridTextColumn Header="Method" Binding="{Binding Method}" Width="80"/>
+                    <DataGridTextColumn Header="Notes" Binding="{Binding Description}" Width="160"/>
+                </DataGrid.Columns>
+            </DataGrid>
+        </Border>
+
+        <Border Grid.Column="1" Background="White" CornerRadius="8" BorderBrush="#E4E7EC" BorderThickness="1" Padding="16">
+            <StackPanel>
+                <TextBlock Text="Record Wage Payment" FontSize="15" FontWeight="SemiBold" Foreground="#101828" Margin="0,0,0,14"/>
+
+                <TextBlock Text="Worker Name" FontSize="12" Foreground="#344054"/>
+                <TextBox Text="{Binding WorkerName, UpdateSourceTrigger=PropertyChanged}"/>
+
+                <TextBlock Text="Amount" FontSize="12" Foreground="#344054"/>
+                <TextBox Text="{Binding Amount, UpdateSourceTrigger=PropertyChanged}"/>
+
+                <TextBlock Text="Method" FontSize="12" Foreground="#344054"/>
+                <ComboBox ItemsSource="{Binding PaymentMethods}" SelectedItem="{Binding Method}"/>
+
+                <TextBlock Text="Notes (optional)" FontSize="12" Foreground="#344054"/>
+                <TextBox Text="{Binding Notes, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" Height="50" TextWrapping="Wrap"/>
+
+                <TextBlock Text="{Binding ErrorMessage}" Foreground="#D92D20" FontSize="12" TextWrapping="Wrap" Margin="0,0,0,10"
+                           Visibility="{Binding ErrorMessage, Converter={StaticResource StringToVisibilityConverter}}"/>
+
+                <Button Content="Record Payment" Style="{StaticResource PrimaryButton}"
+                        Command="{Binding AddWagePaymentCommand}"
+                        IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}"/>
+            </StackPanel>
+        </Border>
+    </Grid>
+</UserControl>

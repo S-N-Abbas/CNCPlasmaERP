@@ -137,6 +137,9 @@ namespace CNCPlasmaERP.UI
             services.AddScoped<ICustomerService, CustomerService>();
             services.AddScoped<ISettingsService, SettingsService>();
 
+            services.AddScoped<IExpenseService, ExpenseService>();
+
+
             // TODO: register ViewModels and Views here as they are built
             services.AddTransient<MainWindow>();
             services.AddTransient<LoginViewModel>();
@@ -155,6 +158,10 @@ namespace CNCPlasmaERP.UI
             services.AddTransient<InvoiceListViewModel>();
             services.AddTransient<PaymentsViewModel>();
             services.AddTransient<InvoicingViewModel>();
+
+            services.AddTransient<ExpenseListViewModel>();
+            services.AddTransient<WagesViewModel>();
+            services.AddTransient<ExpensesViewModel>();
         }
 
         /// <summary>

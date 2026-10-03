@@ -49,11 +49,11 @@ namespace CNCPlasmaERP.UI.ViewModels
                 new NavigationItem { Title = "Customers", Icon = "👥", RequiredPermission = Permission.ManageCustomers, ViewModelType = typeof(CustomersViewModel) },
                 new NavigationItem { Title = "Suppliers", Icon = "🚚", RequiredPermission = Permission.ManageSuppliers, ViewModelType = typeof(SuppliersViewModel) },
                 new NavigationItem { Title = "Jobs", Icon = "🛠️", RequiredPermission = Permission.ManageJobs, ViewModelType = typeof(JobsViewModel) },
-                new NavigationItem { Title = "Invoicing", Icon = "🧾", RequiredPermission = Permission.ManageInvoicesPayments, ViewModelType = typeof(InvoicingViewModel) }
+                new NavigationItem { Title = "Invoicing", Icon = "🧾", RequiredPermission = Permission.ManageInvoicesPayments, ViewModelType = typeof(InvoicingViewModel) },
+                new NavigationItem { Title = "Expenses", Icon = "💵", RequiredPermission = Permission.ManageExpenses, ViewModelType = typeof(ExpensesViewModel) }
 
-                // More entries (Expenses, Wages, Reports, Settings, Users) are
-                // added here as their ViewModels/Views are built in upcoming
-                // modules.
+                // More entries (Reports, Settings, Users) are added here as
+                // their ViewModels/Views are built in upcoming modules.
             };
 
             NavigationItems = new ObservableCollection<NavigationItem>(
