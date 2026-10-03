@@ -197,5 +197,13 @@ namespace CNCPlasmaERP.Services
                 .ThenBy(e => e.Id)
                 .ToListAsync();
         }
+
+        public async Task<IReadOnlyList<Payment>> GetRecentPaymentsAsync(int count = 50) =>
+            await _unitOfWork.Payments.Query()
+                .Include(p => p.Customer)
+                .Include(p => p.Invoice)
+                .OrderByDescending(p => p.PaymentDate)
+                .Take(count)
+                .ToListAsync();
     }
 }

@@ -7,6 +7,7 @@
         <converters:StringToVisibilityConverter x:Key="StringToVisibilityConverter"/>
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
         <converters:NullToVisibilityConverter x:Key="NullToVisibilityConverter" />
+        <converters:InverseBooleanToVisibilityConverter x:Key="InverseBooleanToVisibilityConverter" />
 
         <!-- Shared look for form inputs across every screen -->
         <Style TargetType="TextBox">

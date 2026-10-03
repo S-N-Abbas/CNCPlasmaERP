@@ -30,6 +30,12 @@ namespace CNCPlasmaERP.Data.Repositories
                 .OrderByDescending(i => i.InvoiceDate)
                 .ToListAsync();
 
+        public async Task<IReadOnlyList<Invoice>> GetAllWithCustomerAsync() =>
+            await DbSet.AsNoTracking()
+                .Include(i => i.Customer)
+                .OrderByDescending(i => i.InvoiceDate)
+                .ToListAsync();
+
         public async Task<IReadOnlyList<Invoice>> GetUnpaidOrPartialAsync() =>
             await DbSet.AsNoTracking()
                 .Include(i => i.Customer)

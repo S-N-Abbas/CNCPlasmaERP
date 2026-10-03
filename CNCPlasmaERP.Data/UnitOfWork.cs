@@ -61,6 +61,8 @@ namespace CNCPlasmaERP.Data
             return new EfUnitOfWorkTransaction(transaction);
         }
 
+        public void DetachAllTrackedEntities() => _context.ChangeTracker.Clear();
+
         public void Dispose() => _context.Dispose();
     }
 }

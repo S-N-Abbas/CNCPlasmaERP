@@ -28,12 +28,30 @@ namespace CNCPlasmaERP.UI.ViewModels.Base
     public abstract partial class ViewModelBase : ObservableObject
     {
         private static readonly SemaphoreSlim DatabaseGate = new(1, 1);
+        private static Action? _clearTrackedEntities;
 
         private readonly ILogger _logger;
 
         protected ViewModelBase(ILogger logger)
         {
             _logger = logger;
+        }
+
+        /// <summary>
+        /// Wires up a delegate that clears the shared session-wide DbContext's
+        /// change tracker (IUnitOfWork.DetachAllTrackedEntities). Called once,
+        /// from MainWindowViewModel's constructor — which already holds the
+        /// IServiceProvider every feature ViewModel's services are ultimately
+        /// resolved from — so every RunBusyAsync call after login starts with a
+        /// clean slate, with no risk of one screen's stale tracked entity
+        /// colliding with or corrupting another's operation. Before login this
+        /// is unconfigured and RunBusyAsync simply skips the clear, which is
+        /// fine: LoginViewModel's one simple operation carries none of the
+        /// multi-entity tracking risk this guards against.
+        /// </summary>
+        public static void ConfigureDatabaseReset(Action clearTrackedEntities)
+        {
+            _clearTrackedEntities = clearTrackedEntities;
         }
 
         [ObservableProperty]
@@ -64,6 +82,13 @@ namespace CNCPlasmaERP.UI.ViewModels.Base
             await DatabaseGate.WaitAsync();
             try
             {
+                // Every top-level operation starts with a clean slate: no entity
+                // left tracked from a PREVIOUS operation — especially one that
+                // failed, since a transaction rollback at the database level
+                // does NOT automatically undo EF Core's in-memory tracked
+                // entity state — can collide with or corrupt this one.
+                _clearTrackedEntities?.Invoke();
+
                 await operation();
             }
             catch (DomainException ex)

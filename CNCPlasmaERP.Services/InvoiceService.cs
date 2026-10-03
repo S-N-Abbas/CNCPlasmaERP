@@ -39,6 +39,11 @@ namespace CNCPlasmaERP.Services
 
         public async Task<Invoice> CreateInvoiceFromJobAsync(int jobId, int? createdByUserId)
         {
+            // Clean slate: clears any entity left tracked by an earlier,
+            // unrelated operation in this shared session-wide DbContext before
+            // this operation touches anything.
+            _unitOfWork.DetachAllTrackedEntities();
+
             var job = await _unitOfWork.Jobs.GetWithDetailsAsync(jobId)
                 ?? throw new KeyNotFoundException($"Job {jobId} not found.");
 
@@ -88,8 +93,20 @@ namespace CNCPlasmaERP.Services
 
                 await _unitOfWork.Invoices.AddAsync(invoice);
 
-                job.Status = JobStatus.Invoiced;
-                _unitOfWork.Jobs.Update(job);
+                // job (above) was loaded AsNoTracking for safe reading — it must
+                // never be handed to Update() directly, since a different,
+                // already-tracked instance for the same Id may exist elsewhere
+                // in this shared DbContext (e.g. from a JobService call earlier
+                // in the session), which would throw an identity-map conflict.
+                // Fetching via GetByIdAsync (tracked) reuses that existing
+                // instance if present, or tracks a fresh one if not — either way
+                // there is only ever one tracked instance per Id.
+                var trackedJob = await _unitOfWork.Jobs.GetByIdAsync(job.Id)
+                    ?? throw new KeyNotFoundException($"Job {job.Id} not found.");
+                trackedJob.Status = JobStatus.Invoiced;
+                // No explicit Update() call needed — trackedJob is already
+                // tracked, so EF Core's automatic change detection picks up the
+                // Status change on SaveChanges.
 
                 await _unitOfWork.SaveChangesAsync();
 
@@ -108,6 +125,13 @@ namespace CNCPlasmaERP.Services
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
+
+                // The rollback above only undoes the DATABASE changes — EF Core
+                // does not automatically revert in-memory tracked entity state.
+                // Without this, the half-finished Invoice/Job changes would stay
+                // tracked and could corrupt whatever operation runs next.
+                _unitOfWork.DetachAllTrackedEntities();
+
                 _logger.LogError(ex, "Failed to create invoice for Job {JobId}; transaction rolled back", jobId);
                 throw;
             }
@@ -154,5 +178,16 @@ namespace CNCPlasmaERP.Services
 
         public Task<Invoice?> GetInvoiceWithDetailsAsync(int invoiceId) =>
             _unitOfWork.Invoices.GetWithDetailsAsync(invoiceId);
+
+        public Task<IReadOnlyList<Invoice>> GetAllInvoicesAsync() =>
+            _unitOfWork.Invoices.GetAllWithCustomerAsync();
+
+        public async Task<IReadOnlyList<Invoice>> GetOutstandingInvoicesForCustomerAsync(int customerId)
+        {
+            var invoices = await _unitOfWork.Invoices.GetByCustomerAsync(customerId);
+            return invoices
+                .Where(i => i.Status == InvoiceStatus.Unpaid || i.Status == InvoiceStatus.PartiallyPaid)
+                .ToList();
+        }
     }
 }

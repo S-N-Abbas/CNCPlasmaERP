@@ -11,6 +11,9 @@ namespace CNCPlasmaERP.Core.Interfaces
 
         Task<IReadOnlyList<Invoice>> GetByCustomerAsync(int customerId);
 
+        /// <summary>Every invoice, Customer loaded — for the unfiltered Invoices list.</summary>
+        Task<IReadOnlyList<Invoice>> GetAllWithCustomerAsync();
+
         /// <summary>Invoices with an outstanding balance — feeds the "Receivables" dashboard widget.</summary>
         Task<IReadOnlyList<Invoice>> GetUnpaidOrPartialAsync();
 

@@ -32,6 +32,10 @@
             <views:JobsView/>
         </DataTemplate>
 
+        <DataTemplate DataType="{x:Type vm:InvoicingViewModel}">
+            <views:InvoicingView/>
+        </DataTemplate>
+
         <Style TargetType="Button" x:Key="NavButton">
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="Foreground" Value="#D0D5DD"/>

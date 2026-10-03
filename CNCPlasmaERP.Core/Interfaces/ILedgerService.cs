@@ -29,5 +29,8 @@ namespace CNCPlasmaERP.Core.Interfaces
 
         /// <summary>Full or date-filtered ledger history for a customer, oldest first — used for printable statements.</summary>
         Task<IReadOnlyList<CustomerLedgerEntry>> GetStatementAsync(int customerId, DateTime? fromDate = null, DateTime? toDate = null);
+
+        /// <summary>Most recent payments (Customer and Invoice loaded) — for the Payments screen history grid.</summary>
+        Task<IReadOnlyList<Payment>> GetRecentPaymentsAsync(int count = 50);
     }
 }

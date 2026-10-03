@@ -28,6 +28,8 @@ namespace CNCPlasmaERP.Services
         {
             customer.CurrentBalance = 0; // set by PostOpeningBalanceAsync below if OpeningBalance is non-zero
 
+            _unitOfWork.DetachAllTrackedEntities();
+
             await using var transaction = await _unitOfWork.BeginTransactionAsync();
             try
             {
@@ -41,6 +43,7 @@ namespace CNCPlasmaERP.Services
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
+                _unitOfWork.DetachAllTrackedEntities();
                 _logger.LogError(ex, "Failed to create customer '{Name}'; transaction rolled back", customer.Name);
                 throw;
             }

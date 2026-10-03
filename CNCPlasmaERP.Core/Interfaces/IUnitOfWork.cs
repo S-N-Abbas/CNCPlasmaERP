@@ -36,5 +36,18 @@ namespace CNCPlasmaERP.Core.Interfaces
         Task<int> SaveChangesAsync();
 
         Task<IUnitOfWorkTransaction> BeginTransactionAsync();
+
+        /// <summary>
+        /// Detaches every currently-tracked entity, without disposing the
+        /// underlying DbContext or its connection. Because this app shares one
+        /// DbContext for the whole session, tracked entities from an earlier
+        /// operation — especially a FAILED one, whose in-memory changes are NOT
+        /// automatically undone by a transaction rollback — can otherwise
+        /// collide with or corrupt a later, unrelated operation. Called
+        /// automatically at the start of every ViewModel command (see
+        /// ViewModelBase.RunBusyAsync) and explicitly after rolling back a
+        /// failed multi-step transaction.
+        /// </summary>
+        void DetachAllTrackedEntities();
     }
 }

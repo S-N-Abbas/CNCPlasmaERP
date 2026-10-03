@@ -31,17 +31,29 @@ namespace CNCPlasmaERP.UI.ViewModels
             _serviceProvider = serviceProvider;
             _currentUserContext = currentUserContext;
 
+            // Wires every ViewModel's RunBusyAsync (via the static hook on
+            // ViewModelBase) to clear the shared session-wide DbContext's
+            // change tracker before each operation — see ViewModelBase and
+            // IUnitOfWork.DetachAllTrackedEntities for the full reasoning.
+            // Resolved here (rather than via constructor injection into
+            // ViewModelBase, which would ripple into every derived ViewModel's
+            // constructor) because this is the one place that already holds the
+            // exact IServiceProvider every feature ViewModel's services share.
+            var unitOfWorkForReset = _serviceProvider.GetRequiredService<IUnitOfWork>();
+            ConfigureDatabaseReset(unitOfWorkForReset.DetachAllTrackedEntities);
+
             var allItems = new[]
             {
                 new NavigationItem { Title = "Dashboard", Icon = "🏠", RequiredPermission = null, ViewModelType = typeof(DashboardViewModel) },
                 new NavigationItem { Title = "Stock", Icon = "📦", RequiredPermission = Permission.ManageStock, ViewModelType = typeof(StockViewModel) },
                 new NavigationItem { Title = "Customers", Icon = "👥", RequiredPermission = Permission.ManageCustomers, ViewModelType = typeof(CustomersViewModel) },
                 new NavigationItem { Title = "Suppliers", Icon = "🚚", RequiredPermission = Permission.ManageSuppliers, ViewModelType = typeof(SuppliersViewModel) },
-                new NavigationItem { Title = "Jobs", Icon = "🛠️", RequiredPermission = Permission.ManageJobs, ViewModelType = typeof(JobsViewModel) }
+                new NavigationItem { Title = "Jobs", Icon = "🛠️", RequiredPermission = Permission.ManageJobs, ViewModelType = typeof(JobsViewModel) },
+                new NavigationItem { Title = "Invoicing", Icon = "🧾", RequiredPermission = Permission.ManageInvoicesPayments, ViewModelType = typeof(InvoicingViewModel) }
 
-                // More entries (Invoicing, Expenses, Wages, Reports, Settings,
-                // Users) are added here as their ViewModels/Views are built in
-                // upcoming modules.
+                // More entries (Expenses, Wages, Reports, Settings, Users) are
+                // added here as their ViewModels/Views are built in upcoming
+                // modules.
             };
 
             NavigationItems = new ObservableCollection<NavigationItem>(

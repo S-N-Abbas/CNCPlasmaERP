@@ -15,5 +15,10 @@ namespace CNCPlasmaERP.Core.Interfaces
 
         /// <summary>Invoice with Customer, Job, Items and Payments loaded — for printing/detail screens.</summary>
         Task<Invoice?> GetInvoiceWithDetailsAsync(int invoiceId);
+
+        Task<IReadOnlyList<Invoice>> GetAllInvoicesAsync();
+
+        /// <summary>Unpaid/partially-paid invoices for one customer — for the Payments screen's invoice picker.</summary>
+        Task<IReadOnlyList<Invoice>> GetOutstandingInvoicesForCustomerAsync(int customerId);
     }
 }
