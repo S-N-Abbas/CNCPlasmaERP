@@ -1,0 +1,192 @@
+<UserControl x:Class="CNCPlasmaERP.UI.Views.UsersView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls">
+    <Grid Margin="16">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="340" />
+        </Grid.ColumnDefinitions>
+
+        <!-- Left Side: Users DataGrid -->
+        <Border Grid.Column="0"
+                Background="{DynamicResource MahApps.Brushes.ThemeBackground}"
+                CornerRadius="6"
+                BorderBrush="{DynamicResource MahApps.Brushes.Gray8}"
+                BorderThickness="1"
+                Margin="0,0,16,0">
+            <DataGrid ItemsSource="{Binding Users}"
+                      SelectedItem="{Binding SelectedUser}"
+                      AutoGenerateColumns="False"
+                      IsReadOnly="True"
+                      HeadersVisibility="Column"
+                      GridLinesVisibility="Horizontal"
+                      BorderThickness="0"
+                      RowHeight="38"
+                      Style="{StaticResource MahApps.Styles.DataGrid}">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Username"
+                                        Binding="{Binding Username}"
+                                        Width="120" />
+
+                    <DataGridTextColumn Header="Full Name"
+                                        Binding="{Binding FullName}"
+                                        Width="*" />
+
+                    <DataGridTextColumn Header="Role"
+                                        Binding="{Binding Role}"
+                                        Width="100" />
+
+                    <DataGridTextColumn Header="Status"
+                                        Binding="{Binding IsActive, Converter={StaticResource BooleanToActiveTextConverter}}"
+                                        Width="90" />
+
+                    <DataGridTextColumn Header="Last Login"
+                                        Binding="{Binding LastLoginAt, StringFormat=dd-MMM-yyyy HH:mm}"
+                                        Width="140" />
+
+                    <!-- Activation Toggle Button Column -->
+                    <DataGridTemplateColumn Header="Action"
+                                            Width="110">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Button Padding="8,2"
+                                        FontSize="11"
+                                        Margin="4,2"
+                                        Command="{Binding DataContext.ToggleActiveCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                        CommandParameter="{Binding}">
+                                    <Button.Style>
+                                        <Style TargetType="Button"
+                                               BasedOn="{StaticResource MahApps.Styles.Button.Square}">
+                                            <Setter Property="Content"
+                                                    Value="Deactivate" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsActive}"
+                                                             Value="False">
+                                                    <Setter Property="Content"
+                                                            Value="Activate" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Button.Style>
+                                </Button>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                </DataGrid.Columns>
+            </DataGrid>
+        </Border>
+
+        <!-- Right Side: User Management Forms -->
+        <ScrollViewer Grid.Column="1"
+                      VerticalScrollBarVisibility="Auto">
+            <StackPanel>
+                <!-- Create User Card -->
+                <Border Background="{DynamicResource MahApps.Brushes.ThemeBackground}"
+                        CornerRadius="6"
+                        BorderBrush="{DynamicResource MahApps.Brushes.Gray8}"
+                        BorderThickness="1"
+                        Padding="20"
+                        Margin="0,0,0,16">
+                    <StackPanel>
+                        <TextBlock Text="Create User"
+                                   FontSize="16"
+                                   FontWeight="Bold"
+                                   Foreground="{DynamicResource MahApps.Brushes.Text}"
+                                   Margin="0,0,0,16" />
+
+                        <!-- Username -->
+                        <TextBox Text="{Binding NewUsername, UpdateSourceTrigger=PropertyChanged}"
+                                 mah:TextBoxHelper.Watermark="Username"
+                                 mah:TextBoxHelper.UseFloatingWatermark="True"
+                                 mah:TextBoxHelper.ClearTextButton="True"
+                                 FontSize="13"
+                                 Margin="0,0,0,12"
+                                 Style="{StaticResource MahApps.Styles.TextBox}" />
+
+                        <!-- Full Name -->
+                        <TextBox Text="{Binding NewFullName, UpdateSourceTrigger=PropertyChanged}"
+                                 mah:TextBoxHelper.Watermark="Full Name"
+                                 mah:TextBoxHelper.UseFloatingWatermark="True"
+                                 mah:TextBoxHelper.ClearTextButton="True"
+                                 FontSize="13"
+                                 Margin="0,0,0,12"
+                                 Style="{StaticResource MahApps.Styles.TextBox}" />
+
+                        <!-- Temporary Password -->
+                        <TextBox Text="{Binding NewPassword, UpdateSourceTrigger=PropertyChanged}"
+                                 mah:TextBoxHelper.Watermark="Temporary Password"
+                                 mah:TextBoxHelper.UseFloatingWatermark="True"
+                                 mah:TextBoxHelper.ClearTextButton="True"
+                                 FontSize="13"
+                                 Margin="0,0,0,12"
+                                 Style="{StaticResource MahApps.Styles.TextBox}" />
+
+                        <!-- Role Select -->
+                        <ComboBox ItemsSource="{Binding Roles}"
+                                  SelectedItem="{Binding NewRole}"
+                                  mah:TextBoxHelper.Watermark="Role"
+                                  mah:TextBoxHelper.UseFloatingWatermark="True"
+                                  FontSize="13"
+                                  Margin="0,0,0,16"
+                                  Style="{StaticResource MahApps.Styles.ComboBox}" />
+
+                        <!-- Action Button -->
+                        <Button Content="Create User"
+                                Style="{StaticResource PrimaryButton}"
+                                Height="36"
+                                Command="{Binding CreateUserCommand}"
+                                IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}" />
+                    </StackPanel>
+                </Border>
+
+                <!-- Reset Password Card -->
+                <Border Background="{DynamicResource MahApps.Brushes.ThemeBackground}"
+                        CornerRadius="6"
+                        BorderBrush="{DynamicResource MahApps.Brushes.Gray8}"
+                        BorderThickness="1"
+                        Padding="20">
+                    <StackPanel Visibility="{Binding SelectedUser, Converter={StaticResource NullToVisibilityConverter}}">
+                        <TextBlock FontSize="15"
+                                   FontWeight="Bold"
+                                   Foreground="{DynamicResource MahApps.Brushes.Text}"
+                                   Margin="0,0,0,16">
+                            <Run Text="Reset Password — " /><Run Text="{Binding SelectedUser.Username, Mode=OneWay}" />
+                        </TextBlock>
+
+                        <!-- New Password -->
+                        <TextBox Text="{Binding ResetPassword, UpdateSourceTrigger=PropertyChanged}"
+                                 mah:TextBoxHelper.Watermark="New Password"
+                                 mah:TextBoxHelper.UseFloatingWatermark="True"
+                                 mah:TextBoxHelper.ClearTextButton="True"
+                                 FontSize="13"
+                                 Margin="0,0,0,16"
+                                 Style="{StaticResource MahApps.Styles.TextBox}" />
+
+                        <!-- Action Button -->
+                        <Button Content="Reset Password"
+                                Style="{StaticResource SecondaryButton}"
+                                Height="36"
+                                Command="{Binding ResetPasswordCommand}"
+                                IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}" />
+                    </StackPanel>
+                </Border>
+
+                <!-- Error & Status Display -->
+                <TextBlock Text="{Binding ErrorMessage}"
+                           Foreground="#D92D20"
+                           FontSize="12"
+                           TextWrapping="Wrap"
+                           Margin="0,12,0,0"
+                           Visibility="{Binding ErrorMessage, Converter={StaticResource StringToVisibilityConverter}}" />
+
+                <TextBlock Text="{Binding StatusMessage}"
+                           Foreground="#067647"
+                           FontSize="12"
+                           TextWrapping="Wrap"
+                           Margin="0,12,0,0"
+                           Visibility="{Binding StatusMessage, Converter={StaticResource StringToVisibilityConverter}}" />
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

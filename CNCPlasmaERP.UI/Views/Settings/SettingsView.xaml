@@ -1,95 +1,196 @@
 <UserControl x:Class="CNCPlasmaERP.UI.Views.SettingsView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <Grid Margin="24">
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls">
+    <Grid Margin="16">
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <TextBlock Grid.Row="0" Text="Application Settings" FontSize="20" FontWeight="Bold" Foreground="#101828" Margin="0,0,0,16"/>
+        <!-- View Title -->
+        <TextBlock Grid.Row="0"
+                   Text="Application Settings"
+                   FontSize="22"
+                   FontWeight="Bold"
+                   Foreground="{DynamicResource MahApps.Brushes.Text}"
+                   Margin="0,0,0,16" />
 
-        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
-            <StackPanel MaxWidth="560" HorizontalAlignment="Left"
+        <ScrollViewer Grid.Row="1"
+                      VerticalScrollBarVisibility="Auto">
+            <StackPanel MaxWidth="600"
+                        HorizontalAlignment="Left"
                         Visibility="{Binding Settings, Converter={StaticResource NullToVisibilityConverter}}">
 
-                <!-- Company Info -->
-                <Border Background="White" CornerRadius="8" BorderBrush="#E4E7EC" BorderThickness="1" Padding="20" Margin="0,0,0,16">
+                <!-- Section 1: Company Information -->
+                <Border Background="{DynamicResource MahApps.Brushes.ThemeBackground}"
+                        CornerRadius="6"
+                        BorderBrush="{DynamicResource MahApps.Brushes.Gray8}"
+                        BorderThickness="1"
+                        Padding="20"
+                        Margin="0,0,0,16">
                     <StackPanel>
-                        <TextBlock Text="Company Information" FontSize="15" FontWeight="SemiBold" Foreground="#101828" Margin="0,0,0,14"/>
+                        <TextBlock Text="Company Information"
+                                   FontSize="16"
+                                   FontWeight="Bold"
+                                   Foreground="{DynamicResource MahApps.Brushes.Text}"
+                                   Margin="0,0,0,16" />
 
-                        <TextBlock Text="Company Name" FontSize="12" Foreground="#344054"/>
-                        <TextBox Text="{Binding Settings.CompanyName, UpdateSourceTrigger=PropertyChanged}"/>
+                        <!-- Company Name -->
+                        <TextBox Text="{Binding Settings.CompanyName, UpdateSourceTrigger=PropertyChanged}"
+                                 mah:TextBoxHelper.Watermark="Company Name"
+                                 mah:TextBoxHelper.UseFloatingWatermark="True"
+                                 mah:TextBoxHelper.ClearTextButton="True"
+                                 FontSize="13"
+                                 Margin="0,0,0,12"
+                                 Style="{StaticResource MahApps.Styles.TextBox}" />
 
-                        <TextBlock Text="Address" FontSize="12" Foreground="#344054"/>
-                        <TextBox Text="{Binding Settings.CompanyAddress, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" Height="50" TextWrapping="Wrap"/>
+                        <!-- Address -->
+                        <TextBox Text="{Binding Settings.CompanyAddress, UpdateSourceTrigger=PropertyChanged}"
+                                 mah:TextBoxHelper.Watermark="Company Address"
+                                 mah:TextBoxHelper.UseFloatingWatermark="True"
+                                 AcceptsReturn="True"
+                                 Height="65"
+                                 TextWrapping="Wrap"
+                                 FontSize="13"
+                                 Margin="0,0,0,12"
+                                 Style="{StaticResource MahApps.Styles.TextBox}" />
 
-                        <TextBlock Text="Phone" FontSize="12" Foreground="#344054"/>
-                        <TextBox Text="{Binding Settings.CompanyPhone, UpdateSourceTrigger=PropertyChanged}"/>
+                        <!-- Phone -->
+                        <TextBox Text="{Binding Settings.CompanyPhone, UpdateSourceTrigger=PropertyChanged}"
+                                 mah:TextBoxHelper.Watermark="Phone Number"
+                                 mah:TextBoxHelper.UseFloatingWatermark="True"
+                                 mah:TextBoxHelper.ClearTextButton="True"
+                                 FontSize="13"
+                                 Margin="0,0,0,12"
+                                 Style="{StaticResource MahApps.Styles.TextBox}" />
 
-                        <TextBlock Text="Email" FontSize="12" Foreground="#344054"/>
-                        <TextBox Text="{Binding Settings.CompanyEmail, UpdateSourceTrigger=PropertyChanged}"/>
+                        <!-- Email -->
+                        <TextBox Text="{Binding Settings.CompanyEmail, UpdateSourceTrigger=PropertyChanged}"
+                                 mah:TextBoxHelper.Watermark="Email Address"
+                                 mah:TextBoxHelper.UseFloatingWatermark="True"
+                                 mah:TextBoxHelper.ClearTextButton="True"
+                                 FontSize="13"
+                                 Margin="0,0,0,12"
+                                 Style="{StaticResource MahApps.Styles.TextBox}" />
 
-                        <TextBlock Text="Currency Symbol" FontSize="12" Foreground="#344054"/>
-                        <TextBox Text="{Binding Settings.CurrencySymbol, UpdateSourceTrigger=PropertyChanged}" Width="100" HorizontalAlignment="Left"/>
+                        <!-- Currency Symbol -->
+                        <TextBox Text="{Binding Settings.CurrencySymbol, UpdateSourceTrigger=PropertyChanged}"
+                                 mah:TextBoxHelper.Watermark="Currency Symbol"
+                                 mah:TextBoxHelper.UseFloatingWatermark="True"
+                                 FontSize="13"
+                                 Width="140"
+                                 HorizontalAlignment="Left"
+                                 Style="{StaticResource MahApps.Styles.TextBox}" />
                     </StackPanel>
                 </Border>
 
-                <!-- Tax -->
-                <Border Background="White" CornerRadius="8" BorderBrush="#E4E7EC" BorderThickness="1" Padding="20" Margin="0,0,0,16">
+                <!-- Section 2: Sales Tax -->
+                <Border Background="{DynamicResource MahApps.Brushes.ThemeBackground}"
+                        CornerRadius="6"
+                        BorderBrush="{DynamicResource MahApps.Brushes.Gray8}"
+                        BorderThickness="1"
+                        Padding="20"
+                        Margin="0,0,0,16">
                     <StackPanel>
-                        <TextBlock Text="Sales Tax" FontSize="15" FontWeight="SemiBold" Foreground="#101828" Margin="0,0,0,14"/>
+                        <TextBlock Text="Sales Tax"
+                                   FontSize="16"
+                                   FontWeight="Bold"
+                                   Foreground="{DynamicResource MahApps.Brushes.Text}"
+                                   Margin="0,0,0,14" />
 
-                        <CheckBox Content="Enable sales tax on invoices" IsChecked="{Binding Settings.TaxEnabled}" Margin="0,0,0,12"/>
+                        <CheckBox Content="Enable sales tax on invoices"
+                                  IsChecked="{Binding Settings.TaxEnabled}"
+                                  FontSize="13"
+                                  Margin="0,0,0,14"
+                                  Style="{StaticResource MahApps.Styles.CheckBox}" />
 
-                        <TextBlock Text="Tax Percentage" FontSize="12" Foreground="#344054"/>
-                        <TextBox Text="{Binding Settings.TaxPercentage, UpdateSourceTrigger=PropertyChanged}" Width="120" HorizontalAlignment="Left"
-                                 IsEnabled="{Binding Settings.TaxEnabled}"/>
+                        <TextBox Text="{Binding Settings.TaxPercentage, UpdateSourceTrigger=PropertyChanged}"
+                                 mah:TextBoxHelper.Watermark="Tax Percentage (%)"
+                                 mah:TextBoxHelper.UseFloatingWatermark="True"
+                                 FontSize="13"
+                                 Width="160"
+                                 HorizontalAlignment="Left"
+                                 IsEnabled="{Binding Settings.TaxEnabled}"
+                                 Style="{StaticResource MahApps.Styles.TextBox}" />
                     </StackPanel>
                 </Border>
 
-                <!-- Document Numbering -->
-                <Border Background="White" CornerRadius="8" BorderBrush="#E4E7EC" BorderThickness="1" Padding="20" Margin="0,0,0,16">
+                <!-- Section 3: Document Numbering -->
+                <Border Background="{DynamicResource MahApps.Brushes.ThemeBackground}"
+                        CornerRadius="6"
+                        BorderBrush="{DynamicResource MahApps.Brushes.Gray8}"
+                        BorderThickness="1"
+                        Padding="20"
+                        Margin="0,0,0,16">
                     <StackPanel>
-                        <TextBlock Text="Document Numbering" FontSize="15" FontWeight="SemiBold" Foreground="#101828" Margin="0,0,0,4"/>
+                        <TextBlock Text="Document Numbering"
+                                   FontSize="16"
+                                   FontWeight="Bold"
+                                   Foreground="{DynamicResource MahApps.Brushes.Text}"
+                                   Margin="0,0,0,4" />
                         <TextBlock Text="Prefixes used for auto-generated numbers, e.g. INV-2026-0001. Changing a prefix does not affect numbers already issued."
-                                   FontSize="11" Foreground="#667085" TextWrapping="Wrap" Margin="0,0,0,14"/>
+                                   FontSize="12"
+                                   Foreground="{DynamicResource MahApps.Brushes.Gray3}"
+                                   TextWrapping="Wrap"
+                                   Margin="0,0,0,16" />
 
                         <Grid>
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="12"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="12"/>
-                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="12" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="12" />
+                                <ColumnDefinition Width="*" />
                             </Grid.ColumnDefinitions>
 
-                            <StackPanel Grid.Column="0">
-                                <TextBlock Text="Job Prefix" FontSize="12" Foreground="#344054"/>
-                                <TextBox Text="{Binding Settings.JobPrefix, UpdateSourceTrigger=PropertyChanged}"/>
-                            </StackPanel>
+                            <TextBox Grid.Column="0"
+                                     Text="{Binding Settings.JobPrefix, UpdateSourceTrigger=PropertyChanged}"
+                                     mah:TextBoxHelper.Watermark="Job Prefix"
+                                     mah:TextBoxHelper.UseFloatingWatermark="True"
+                                     FontSize="13"
+                                     Style="{StaticResource MahApps.Styles.TextBox}" />
 
-                            <StackPanel Grid.Column="2">
-                                <TextBlock Text="Invoice Prefix" FontSize="12" Foreground="#344054"/>
-                                <TextBox Text="{Binding Settings.InvoicePrefix, UpdateSourceTrigger=PropertyChanged}"/>
-                            </StackPanel>
+                            <TextBox Grid.Column="2"
+                                     Text="{Binding Settings.InvoicePrefix, UpdateSourceTrigger=PropertyChanged}"
+                                     mah:TextBoxHelper.Watermark="Invoice Prefix"
+                                     mah:TextBoxHelper.UseFloatingWatermark="True"
+                                     FontSize="13"
+                                     Style="{StaticResource MahApps.Styles.TextBox}" />
 
-                            <StackPanel Grid.Column="4">
-                                <TextBlock Text="Quotation Prefix" FontSize="12" Foreground="#344054"/>
-                                <TextBox Text="{Binding Settings.QuotationPrefix, UpdateSourceTrigger=PropertyChanged}"/>
-                            </StackPanel>
+                            <TextBox Grid.Column="4"
+                                     Text="{Binding Settings.QuotationPrefix, UpdateSourceTrigger=PropertyChanged}"
+                                     mah:TextBoxHelper.Watermark="Quotation Prefix"
+                                     mah:TextBoxHelper.UseFloatingWatermark="True"
+                                     FontSize="13"
+                                     Style="{StaticResource MahApps.Styles.TextBox}" />
                         </Grid>
                     </StackPanel>
                 </Border>
 
-                <TextBlock Text="{Binding ErrorMessage}" Foreground="#D92D20" FontSize="12" TextWrapping="Wrap" Margin="0,0,0,8"
-                           Visibility="{Binding ErrorMessage, Converter={StaticResource StringToVisibilityConverter}}"/>
-                <TextBlock Text="{Binding StatusMessage}" Foreground="#067647" FontSize="12" TextWrapping="Wrap" Margin="0,0,0,8"
-                           Visibility="{Binding StatusMessage, Converter={StaticResource StringToVisibilityConverter}}"/>
+                <!-- Status & Error Messages -->
+                <TextBlock Text="{Binding ErrorMessage}"
+                           Foreground="#D92D20"
+                           FontSize="12"
+                           TextWrapping="Wrap"
+                           Margin="0,0,0,8"
+                           Visibility="{Binding ErrorMessage, Converter={StaticResource StringToVisibilityConverter}}" />
 
-                <Button Content="Save Settings" Style="{StaticResource PrimaryButton}" HorizontalAlignment="Left" Width="160"
+                <TextBlock Text="{Binding StatusMessage}"
+                           Foreground="#067647"
+                           FontSize="12"
+                           TextWrapping="Wrap"
+                           Margin="0,0,0,8"
+                           Visibility="{Binding StatusMessage, Converter={StaticResource StringToVisibilityConverter}}" />
+
+                <!-- Save Action Button -->
+                <Button Content="Save Settings"
+                        Style="{StaticResource PrimaryButton}"
+                        HorizontalAlignment="Left"
+                        Width="160"
+                        Height="36"
                         Command="{Binding SaveCommand}"
-                        IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}"/>
+                        IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}" />
             </StackPanel>
         </ScrollViewer>
     </Grid>

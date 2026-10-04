@@ -1,74 +1,219 @@
 <UserControl x:Class="CNCPlasmaERP.UI.Views.StockPurchaseView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <Grid Margin="24">
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls">
+    <Grid Margin="16">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="320"/>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="340" />
         </Grid.ColumnDefinitions>
 
-        <Border Grid.Column="0" Background="White" CornerRadius="8" BorderBrush="#E4E7EC" BorderThickness="1" Margin="0,0,16,0">
-            <DataGrid ItemsSource="{Binding RecentPurchases}" AutoGenerateColumns="False" IsReadOnly="True"
-                      HeadersVisibility="Column" GridLinesVisibility="Horizontal" BorderThickness="0" RowHeight="36">
+        <!-- Left Side: Recent Purchases DataGrid -->
+        <Border Grid.Column="0"
+                Background="{DynamicResource MahApps.Brushes.ThemeBackground}"
+                CornerRadius="6"
+                BorderBrush="{DynamicResource MahApps.Brushes.Gray8}"
+                BorderThickness="1"
+                Margin="0,0,16,0">
+            <DataGrid ItemsSource="{Binding RecentPurchases}"
+                      AutoGenerateColumns="False"
+                      IsReadOnly="True"
+                      HeadersVisibility="Column"
+                      GridLinesVisibility="Horizontal"
+                      BorderThickness="0"
+                      RowHeight="38"
+                      Style="{StaticResource MahApps.Styles.DataGrid}">
                 <DataGrid.Columns>
-                    <DataGridTextColumn Header="Date" Binding="{Binding PurchaseDate, StringFormat=dd-MMM-yyyy}" Width="100"/>
-                    <DataGridTextColumn Header="Material" Binding="{Binding Material.Name}" Width="*"/>
-                    <DataGridTextColumn Header="Supplier" Binding="{Binding Supplier.Name}" Width="140"/>
-                    <DataGridTextColumn Header="Weight (Kg)" Binding="{Binding WeightKg, StringFormat=N2}" Width="100"/>
-                    <DataGridTextColumn Header="Rate/Kg" Binding="{Binding RatePerKg, StringFormat=N2}" Width="80"/>
-                    <DataGridTextColumn Header="Total" Binding="{Binding TotalCost, StringFormat=N2}" Width="100"/>
+                    <DataGridTextColumn Header="Date"
+                                        Binding="{Binding PurchaseDate, StringFormat=dd-MMM-yyyy}"
+                                        Width="100" />
+
+                    <DataGridTextColumn Header="Material"
+                                        Binding="{Binding Material.Name}"
+                                        Width="*" />
+
+                    <DataGridTextColumn Header="Supplier"
+                                        Binding="{Binding Supplier.Name}"
+                                        Width="140" />
+
+                    <DataGridTextColumn Header="Weight (Kg)"
+                                        Binding="{Binding WeightKg, StringFormat=N2}"
+                                        Width="100">
+                        <DataGridTextColumn.ElementStyle>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="HorizontalAlignment"
+                                        Value="Right" />
+                                <Setter Property="Margin"
+                                        Value="0,0,10,0" />
+                                <Setter Property="VerticalAlignment"
+                                        Value="Center" />
+                            </Style>
+                        </DataGridTextColumn.ElementStyle>
+                    </DataGridTextColumn>
+
+                    <DataGridTextColumn Header="Rate/Kg"
+                                        Binding="{Binding RatePerKg, StringFormat=N2}"
+                                        Width="90">
+                        <DataGridTextColumn.ElementStyle>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="HorizontalAlignment"
+                                        Value="Right" />
+                                <Setter Property="Margin"
+                                        Value="0,0,10,0" />
+                                <Setter Property="VerticalAlignment"
+                                        Value="Center" />
+                            </Style>
+                        </DataGridTextColumn.ElementStyle>
+                    </DataGridTextColumn>
+
+                    <DataGridTextColumn Header="Total Cost"
+                                        Binding="{Binding TotalCost, StringFormat=N2}"
+                                        Width="110">
+                        <DataGridTextColumn.ElementStyle>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="HorizontalAlignment"
+                                        Value="Right" />
+                                <Setter Property="Margin"
+                                        Value="0,0,10,0" />
+                                <Setter Property="VerticalAlignment"
+                                        Value="Center" />
+                                <Setter Property="FontWeight"
+                                        Value="SemiBold" />
+                            </Style>
+                        </DataGridTextColumn.ElementStyle>
+                    </DataGridTextColumn>
                 </DataGrid.Columns>
             </DataGrid>
         </Border>
 
-        <Border Grid.Column="1" Background="White" CornerRadius="8" BorderBrush="#E4E7EC" BorderThickness="1" Padding="16">
-            <StackPanel>
-                <TextBlock Text="Record Purchase" FontSize="15" FontWeight="SemiBold" Foreground="#101828" Margin="0,0,0,14"/>
+        <!-- Right Side: Record Purchase Form -->
+        <Border Grid.Column="1"
+                Background="{DynamicResource MahApps.Brushes.ThemeBackground}"
+                CornerRadius="6"
+                BorderBrush="{DynamicResource MahApps.Brushes.Gray8}"
+                BorderThickness="1"
+                Padding="20">
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <StackPanel>
+                    <TextBlock Text="Record Purchase"
+                               FontSize="16"
+                               FontWeight="Bold"
+                               Foreground="{DynamicResource MahApps.Brushes.Text}"
+                               Margin="0,0,0,16" />
 
-                <TextBlock Text="Material" FontSize="12" Foreground="#344054"/>
-                <ComboBox ItemsSource="{Binding Materials}" SelectedItem="{Binding SelectedMaterial}" DisplayMemberPath="Name"/>
+                    <!-- Material Select -->
+                    <ComboBox ItemsSource="{Binding Materials}"
+                              SelectedItem="{Binding SelectedMaterial}"
+                              DisplayMemberPath="Name"
+                              mah:TextBoxHelper.Watermark="Material"
+                              mah:TextBoxHelper.UseFloatingWatermark="True"
+                              FontSize="13"
+                              Margin="0,0,0,12"
+                              Style="{StaticResource MahApps.Styles.ComboBox}" />
 
-                <TextBlock Text="Supplier" FontSize="12" Foreground="#344054"/>
-                <ComboBox ItemsSource="{Binding Suppliers}" SelectedItem="{Binding SelectedSupplier}" DisplayMemberPath="Name"/>
+                    <!-- Supplier Select -->
+                    <ComboBox ItemsSource="{Binding Suppliers}"
+                              SelectedItem="{Binding SelectedSupplier}"
+                              DisplayMemberPath="Name"
+                              mah:TextBoxHelper.Watermark="Supplier"
+                              mah:TextBoxHelper.UseFloatingWatermark="True"
+                              FontSize="13"
+                              Margin="0,0,0,12"
+                              Style="{StaticResource MahApps.Styles.ComboBox}" />
 
-                <Grid Margin="0,0,0,10">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="8"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-                    <TextBox Grid.Column="0" Text="{Binding NewSupplierName, UpdateSourceTrigger=PropertyChanged}"
-                             Margin="0" ToolTip="New supplier name"/>
-                    <Button Grid.Column="2" Content="+ Add" Style="{StaticResource SecondaryButton}"
-                            Command="{Binding AddSupplierCommand}"
-                            IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}"/>
-                </Grid>
+                    <!-- Add New Supplier Inline Control -->
+                    <Grid Margin="0,0,0,12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="8" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
 
-                <TextBlock Text="Weight (Kg)" FontSize="12" Foreground="#344054"/>
-                <TextBox Text="{Binding WeightKg, UpdateSourceTrigger=PropertyChanged}"/>
+                        <TextBox Grid.Column="0"
+                                 Text="{Binding NewSupplierName, UpdateSourceTrigger=PropertyChanged}"
+                                 mah:TextBoxHelper.Watermark="New Supplier Name"
+                                 mah:TextBoxHelper.UseFloatingWatermark="True"
+                                 mah:TextBoxHelper.ClearTextButton="True"
+                                 FontSize="13"
+                                 Style="{StaticResource MahApps.Styles.TextBox}" />
 
-                <TextBlock Text="Sheet Count (optional)" FontSize="12" Foreground="#344054"/>
-                <TextBox Text="{Binding SheetCount, UpdateSourceTrigger=PropertyChanged}"/>
+                        <Button Grid.Column="2"
+                                Content="+ Add"
+                                Style="{StaticResource SecondaryButton}"
+                                Height="34"
+                                VerticalAlignment="Bottom"
+                                Command="{Binding AddSupplierCommand}"
+                                IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}" />
+                    </Grid>
 
-                <TextBlock Text="Rate / Kg" FontSize="12" Foreground="#344054"/>
-                <TextBox Text="{Binding RatePerKg, UpdateSourceTrigger=PropertyChanged}"/>
+                    <!-- Weight (Kg) -->
+                    <TextBox Text="{Binding WeightKg, UpdateSourceTrigger=PropertyChanged}"
+                             mah:TextBoxHelper.Watermark="Weight (Kg)"
+                             mah:TextBoxHelper.UseFloatingWatermark="True"
+                             FontSize="13"
+                             Margin="0,0,0,12"
+                             Style="{StaticResource MahApps.Styles.TextBox}" />
 
-                <TextBlock Text="Carriage Cost (optional)" FontSize="12" Foreground="#344054"/>
-                <TextBox Text="{Binding CarriageCost, UpdateSourceTrigger=PropertyChanged}"/>
+                    <!-- Sheet Count -->
+                    <TextBox Text="{Binding SheetCount, UpdateSourceTrigger=PropertyChanged}"
+                             mah:TextBoxHelper.Watermark="Sheet Count (optional)"
+                             mah:TextBoxHelper.UseFloatingWatermark="True"
+                             FontSize="13"
+                             Margin="0,0,0,12"
+                             Style="{StaticResource MahApps.Styles.TextBox}" />
 
-                <TextBlock Text="Supplier Invoice # (optional)" FontSize="12" Foreground="#344054"/>
-                <TextBox Text="{Binding SupplierInvoiceNumber, UpdateSourceTrigger=PropertyChanged}"/>
+                    <!-- Rate / Kg -->
+                    <TextBox Text="{Binding RatePerKg, UpdateSourceTrigger=PropertyChanged}"
+                             mah:TextBoxHelper.Watermark="Rate / Kg"
+                             mah:TextBoxHelper.UseFloatingWatermark="True"
+                             FontSize="13"
+                             Margin="0,0,0,12"
+                             Style="{StaticResource MahApps.Styles.TextBox}" />
 
-                <TextBlock Text="Notes (optional)" FontSize="12" Foreground="#344054"/>
-                <TextBox Text="{Binding Notes, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" Height="50" TextWrapping="Wrap"/>
+                    <!-- Carriage Cost -->
+                    <TextBox Text="{Binding CarriageCost, UpdateSourceTrigger=PropertyChanged}"
+                             mah:TextBoxHelper.Watermark="Carriage Cost (optional)"
+                             mah:TextBoxHelper.UseFloatingWatermark="True"
+                             FontSize="13"
+                             Margin="0,0,0,12"
+                             Style="{StaticResource MahApps.Styles.TextBox}" />
 
-                <TextBlock Text="{Binding ErrorMessage}" Foreground="#D92D20" FontSize="12" TextWrapping="Wrap" Margin="0,0,0,10"
-                           Visibility="{Binding ErrorMessage, Converter={StaticResource StringToVisibilityConverter}}"/>
+                    <!-- Supplier Invoice # -->
+                    <TextBox Text="{Binding SupplierInvoiceNumber, UpdateSourceTrigger=PropertyChanged}"
+                             mah:TextBoxHelper.Watermark="Supplier Invoice # (optional)"
+                             mah:TextBoxHelper.UseFloatingWatermark="True"
+                             mah:TextBoxHelper.ClearTextButton="True"
+                             FontSize="13"
+                             Margin="0,0,0,12"
+                             Style="{StaticResource MahApps.Styles.TextBox}" />
 
-                <Button Content="Record Purchase" Style="{StaticResource PrimaryButton}"
-                        Command="{Binding RecordPurchaseCommand}"
-                        IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}"/>
-            </StackPanel>
+                    <!-- Notes -->
+                    <TextBox Text="{Binding Notes, UpdateSourceTrigger=PropertyChanged}"
+                             mah:TextBoxHelper.Watermark="Notes (optional)"
+                             mah:TextBoxHelper.UseFloatingWatermark="True"
+                             AcceptsReturn="True"
+                             Height="60"
+                             TextWrapping="Wrap"
+                             FontSize="13"
+                             Margin="0,0,0,16"
+                             Style="{StaticResource MahApps.Styles.TextBox}" />
+
+                    <!-- Error Display -->
+                    <TextBlock Text="{Binding ErrorMessage}"
+                               Foreground="#D92D20"
+                               FontSize="12"
+                               TextWrapping="Wrap"
+                               Margin="0,0,0,12"
+                               Visibility="{Binding ErrorMessage, Converter={StaticResource StringToVisibilityConverter}}" />
+
+                    <!-- Action Button -->
+                    <Button Content="Record Purchase"
+                            Style="{StaticResource PrimaryButton}"
+                            Height="36"
+                            Command="{Binding RecordPurchaseCommand}"
+                            IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}" />
+                </StackPanel>
+            </ScrollViewer>
         </Border>
     </Grid>
 </UserControl>

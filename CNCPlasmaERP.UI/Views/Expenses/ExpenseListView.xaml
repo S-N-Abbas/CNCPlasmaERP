@@ -1,54 +1,147 @@
 <UserControl x:Class="CNCPlasmaERP.UI.Views.ExpenseListView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <Grid Margin="24">
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls">
+    <Grid Margin="16">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="300"/>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="340" />
         </Grid.ColumnDefinitions>
 
-        <Border Grid.Column="0" Background="White" CornerRadius="8" BorderBrush="#E4E7EC" BorderThickness="1" Margin="0,0,16,0">
-            <DataGrid ItemsSource="{Binding Expenses}" AutoGenerateColumns="False" IsReadOnly="True"
-                      HeadersVisibility="Column" GridLinesVisibility="Horizontal" BorderThickness="0" RowHeight="36">
+        <!-- Expenses DataGrid -->
+        <Border Grid.Column="0"
+                Background="{DynamicResource MahApps.Brushes.ThemeBackground}"
+                CornerRadius="6"
+                BorderBrush="{DynamicResource MahApps.Brushes.Gray8}"
+                BorderThickness="1"
+                Margin="0,0,16,0">
+            <DataGrid ItemsSource="{Binding Expenses}"
+                      AutoGenerateColumns="False"
+                      IsReadOnly="True"
+                      HeadersVisibility="Column"
+                      GridLinesVisibility="Horizontal"
+                      BorderThickness="0"
+                      RowHeight="38"
+                      Style="{StaticResource MahApps.Styles.DataGrid}">
                 <DataGrid.Columns>
-                    <DataGridTextColumn Header="Date" Binding="{Binding ExpenseDate, StringFormat=dd-MMM-yyyy}" Width="100"/>
-                    <DataGridTextColumn Header="Category" Binding="{Binding Category}" Width="100"/>
-                    <DataGridTextColumn Header="Paid To" Binding="{Binding PaidTo}" Width="140"/>
-                    <DataGridTextColumn Header="Amount" Binding="{Binding Amount, StringFormat=N2}" Width="90"/>
-                    <DataGridTextColumn Header="Method" Binding="{Binding Method}" Width="80"/>
+                    <DataGridTextColumn Header="Date"
+                                        Binding="{Binding ExpenseDate, StringFormat=dd-MMM-yyyy}"
+                                        Width="110" />
+
+                    <DataGridTextColumn Header="Category"
+                                        Binding="{Binding Category}"
+                                        Width="120" />
+
+                    <DataGridTextColumn Header="Paid To"
+                                        Binding="{Binding PaidTo}"
+                                        Width="*" />
+
+                    <DataGridTextColumn Header="Amount"
+                                        Binding="{Binding Amount, StringFormat=N2}"
+                                        Width="110">
+                        <DataGridTextColumn.ElementStyle>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="HorizontalAlignment"
+                                        Value="Right" />
+                                <Setter Property="Margin"
+                                        Value="0,0,12,0" />
+                                <Setter Property="VerticalAlignment"
+                                        Value="Center" />
+                            </Style>
+                        </DataGridTextColumn.ElementStyle>
+                    </DataGridTextColumn>
+
+                    <DataGridTextColumn Header="Method"
+                                        Binding="{Binding Method}"
+                                        Width="100" />
                 </DataGrid.Columns>
             </DataGrid>
         </Border>
 
-        <Border Grid.Column="1" Background="White" CornerRadius="8" BorderBrush="#E4E7EC" BorderThickness="1" Padding="16">
+        <!-- Add Expense Sidebar Form -->
+        <Border Grid.Column="1"
+                Background="{DynamicResource MahApps.Brushes.ThemeBackground}"
+                CornerRadius="6"
+                BorderBrush="{DynamicResource MahApps.Brushes.Gray8}"
+                BorderThickness="1"
+                Padding="18">
             <ScrollViewer VerticalScrollBarVisibility="Auto">
                 <StackPanel>
-                    <TextBlock Text="Add Expense" FontSize="15" FontWeight="SemiBold" Foreground="#101828" Margin="0,0,0,14"/>
+                    <TextBlock Text="Add Expense"
+                               FontSize="16"
+                               FontWeight="Bold"
+                               Foreground="{DynamicResource MahApps.Brushes.Text}"
+                               Margin="0,0,0,16" />
 
-                    <TextBlock Text="Category" FontSize="12" Foreground="#344054"/>
-                    <ComboBox ItemsSource="{Binding Categories}" SelectedItem="{Binding NewCategory}"/>
+                    <!-- Category Selection -->
+                    <ComboBox ItemsSource="{Binding Categories}"
+                              SelectedItem="{Binding NewCategory}"
+                              mah:TextBoxHelper.Watermark="Select Category"
+                              mah:TextBoxHelper.UseFloatingWatermark="True"
+                              FontSize="13"
+                              Margin="0,0,0,12"
+                              Style="{StaticResource MahApps.Styles.ComboBox}" />
 
-                    <TextBlock Text="Amount" FontSize="12" Foreground="#344054"/>
-                    <TextBox Text="{Binding NewAmount, UpdateSourceTrigger=PropertyChanged}"/>
+                    <!-- Amount Input -->
+                    <TextBox Text="{Binding NewAmount, UpdateSourceTrigger=PropertyChanged}"
+                             mah:TextBoxHelper.Watermark="Amount"
+                             mah:TextBoxHelper.UseFloatingWatermark="True"
+                             mah:TextBoxHelper.ClearTextButton="True"
+                             FontSize="13"
+                             Margin="0,0,0,12"
+                             Style="{StaticResource MahApps.Styles.TextBox}" />
 
-                    <TextBlock Text="Paid To (optional)" FontSize="12" Foreground="#344054"/>
-                    <TextBox Text="{Binding NewPaidTo, UpdateSourceTrigger=PropertyChanged}"/>
+                    <!-- Paid To Input -->
+                    <TextBox Text="{Binding NewPaidTo, UpdateSourceTrigger=PropertyChanged}"
+                             mah:TextBoxHelper.Watermark="Paid To (optional)"
+                             mah:TextBoxHelper.UseFloatingWatermark="True"
+                             mah:TextBoxHelper.ClearTextButton="True"
+                             FontSize="13"
+                             Margin="0,0,0,12"
+                             Style="{StaticResource MahApps.Styles.TextBox}" />
 
-                    <TextBlock Text="Method" FontSize="12" Foreground="#344054"/>
-                    <ComboBox ItemsSource="{Binding PaymentMethods}" SelectedItem="{Binding NewMethod}"/>
+                    <!-- Payment Method Dropdown -->
+                    <ComboBox ItemsSource="{Binding PaymentMethods}"
+                              SelectedItem="{Binding NewMethod}"
+                              mah:TextBoxHelper.Watermark="Select Method"
+                              mah:TextBoxHelper.UseFloatingWatermark="True"
+                              FontSize="13"
+                              Margin="0,0,0,12"
+                              Style="{StaticResource MahApps.Styles.ComboBox}" />
 
-                    <TextBlock Text="Reference # (optional)" FontSize="12" Foreground="#344054"/>
-                    <TextBox Text="{Binding NewReferenceNumber, UpdateSourceTrigger=PropertyChanged}"/>
+                    <!-- Reference Number Input -->
+                    <TextBox Text="{Binding NewReferenceNumber, UpdateSourceTrigger=PropertyChanged}"
+                             mah:TextBoxHelper.Watermark="Reference # (optional)"
+                             mah:TextBoxHelper.UseFloatingWatermark="True"
+                             mah:TextBoxHelper.ClearTextButton="True"
+                             FontSize="13"
+                             Margin="0,0,0,12"
+                             Style="{StaticResource MahApps.Styles.TextBox}" />
 
-                    <TextBlock Text="Description (optional)" FontSize="12" Foreground="#344054"/>
-                    <TextBox Text="{Binding NewDescription, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" Height="50" TextWrapping="Wrap"/>
+                    <!-- Description Input -->
+                    <TextBox Text="{Binding NewDescription, UpdateSourceTrigger=PropertyChanged}"
+                             mah:TextBoxHelper.Watermark="Description (optional)"
+                             mah:TextBoxHelper.UseFloatingWatermark="True"
+                             AcceptsReturn="True"
+                             Height="60"
+                             TextWrapping="Wrap"
+                             FontSize="13"
+                             Margin="0,0,0,16"
+                             Style="{StaticResource MahApps.Styles.TextBox}" />
 
-                    <TextBlock Text="{Binding ErrorMessage}" Foreground="#D92D20" FontSize="12" TextWrapping="Wrap" Margin="0,0,0,10"
-                               Visibility="{Binding ErrorMessage, Converter={StaticResource StringToVisibilityConverter}}"/>
+                    <!-- Error Display -->
+                    <TextBlock Text="{Binding ErrorMessage}"
+                               Foreground="#D92D20"
+                               FontSize="12"
+                               TextWrapping="Wrap"
+                               Margin="0,0,0,12"
+                               Visibility="{Binding ErrorMessage, Converter={StaticResource StringToVisibilityConverter}}" />
 
-                    <Button Content="Add Expense" Style="{StaticResource PrimaryButton}"
+                    <!-- Action Button -->
+                    <Button Content="Add Expense"
+                            Style="{StaticResource PrimaryButton}"
                             Command="{Binding AddExpenseCommand}"
-                            IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}"/>
+                            IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}" />
                 </StackPanel>
             </ScrollViewer>
         </Border>

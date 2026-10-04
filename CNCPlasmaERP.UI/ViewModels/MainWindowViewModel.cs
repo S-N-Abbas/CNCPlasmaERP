@@ -83,13 +83,12 @@ namespace CNCPlasmaERP.UI.ViewModels
         {
             SelectedNavigationItem = item;
 
-            // Resolving via DI here — rather than the usual constructor injection —
-            // is the one deliberate exception to normal MVVM practice in this app.
-            // The shell has to create arbitrary feature ViewModels on demand as the
-            // user clicks around; that's exactly what a composition-root-adjacent
-            // "shell" ViewModel is for. _serviceProvider is whichever scope this
-            // ViewModel itself was resolved from (see the App.xaml.cs scope note),
-            // so every screen the user navigates to shares one DbContext for the session.
+            // Update selection state on all sidebar navigation items
+            foreach (var navItem in NavigationItems)
+            {
+                navItem.IsSelected = (navItem == item);
+            }
+
             CurrentViewModel = (ViewModelBase)_serviceProvider.GetRequiredService(item.ViewModelType);
         }
 

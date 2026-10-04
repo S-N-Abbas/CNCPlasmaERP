@@ -1,58 +1,161 @@
 <UserControl x:Class="CNCPlasmaERP.UI.Views.PaymentsView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <Grid Margin="24">
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls">
+    <Grid Margin="16">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="340"/>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="340" />
         </Grid.ColumnDefinitions>
 
-        <Border Grid.Column="0" Background="White" CornerRadius="8" BorderBrush="#E4E7EC" BorderThickness="1" Margin="0,0,16,0">
-            <DataGrid ItemsSource="{Binding RecentPayments}" AutoGenerateColumns="False" IsReadOnly="True"
-                      HeadersVisibility="Column" GridLinesVisibility="Horizontal" BorderThickness="0" RowHeight="36">
+        <!-- Left Side: Recent Payments DataGrid -->
+        <Border Grid.Column="0"
+                Background="{DynamicResource MahApps.Brushes.ThemeBackground}"
+                CornerRadius="6"
+                BorderBrush="{DynamicResource MahApps.Brushes.Gray8}"
+                BorderThickness="1"
+                Margin="0,0,16,0">
+            <DataGrid ItemsSource="{Binding RecentPayments}"
+                      AutoGenerateColumns="False"
+                      IsReadOnly="True"
+                      HeadersVisibility="Column"
+                      GridLinesVisibility="Horizontal"
+                      BorderThickness="0"
+                      RowHeight="38"
+                      Style="{StaticResource MahApps.Styles.DataGrid}">
                 <DataGrid.Columns>
-                    <DataGridTextColumn Header="Date" Binding="{Binding PaymentDate, StringFormat=dd-MMM-yyyy}" Width="100"/>
-                    <DataGridTextColumn Header="Customer" Binding="{Binding Customer.Name}" Width="*"/>
-                    <DataGridTextColumn Header="Invoice" Binding="{Binding Invoice.InvoiceNumber}" Width="110"/>
-                    <DataGridTextColumn Header="Amount" Binding="{Binding Amount, StringFormat=N2}" Width="90"/>
-                    <DataGridTextColumn Header="Method" Binding="{Binding Method}" Width="80"/>
+                    <DataGridTextColumn Header="Date"
+                                        Binding="{Binding PaymentDate, StringFormat=dd-MMM-yyyy}"
+                                        Width="110" />
+
+                    <DataGridTextColumn Header="Customer"
+                                        Binding="{Binding Customer.Name}"
+                                        Width="*" />
+
+                    <DataGridTextColumn Header="Invoice"
+                                        Binding="{Binding Invoice.InvoiceNumber}"
+                                        Width="120" />
+
+                    <DataGridTextColumn Header="Amount"
+                                        Binding="{Binding Amount, StringFormat=N2}"
+                                        Width="100">
+                        <DataGridTextColumn.ElementStyle>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="HorizontalAlignment"
+                                        Value="Right" />
+                                <Setter Property="Margin"
+                                        Value="0,0,10,0" />
+                                <Setter Property="VerticalAlignment"
+                                        Value="Center" />
+                                <Setter Property="FontWeight"
+                                        Value="SemiBold" />
+                            </Style>
+                        </DataGridTextColumn.ElementStyle>
+                    </DataGridTextColumn>
+
+                    <DataGridTextColumn Header="Method"
+                                        Binding="{Binding Method}"
+                                        Width="100" />
                 </DataGrid.Columns>
             </DataGrid>
         </Border>
 
-        <Border Grid.Column="1" Background="White" CornerRadius="8" BorderBrush="#E4E7EC" BorderThickness="1" Padding="16">
+        <!-- Right Side: Record Payment Form -->
+        <Border Grid.Column="1"
+                Background="{DynamicResource MahApps.Brushes.ThemeBackground}"
+                CornerRadius="6"
+                BorderBrush="{DynamicResource MahApps.Brushes.Gray8}"
+                BorderThickness="1"
+                Padding="20">
             <ScrollViewer VerticalScrollBarVisibility="Auto">
                 <StackPanel>
-                    <TextBlock Text="Record Payment" FontSize="15" FontWeight="SemiBold" Foreground="#101828" Margin="0,0,0,14"/>
+                    <TextBlock Text="Record Payment"
+                               FontSize="16"
+                               FontWeight="Bold"
+                               Foreground="{DynamicResource MahApps.Brushes.Text}"
+                               Margin="0,0,0,16" />
 
-                    <TextBlock Text="Customer" FontSize="12" Foreground="#344054"/>
-                    <ComboBox ItemsSource="{Binding Customers}" SelectedItem="{Binding SelectedCustomer}" DisplayMemberPath="Name"/>
+                    <!-- Customer Select -->
+                    <ComboBox ItemsSource="{Binding Customers}"
+                              SelectedItem="{Binding SelectedCustomer}"
+                              DisplayMemberPath="Name"
+                              mah:TextBoxHelper.Watermark="Customer"
+                              mah:TextBoxHelper.UseFloatingWatermark="True"
+                              FontSize="13"
+                              Margin="0,0,0,12"
+                              Style="{StaticResource MahApps.Styles.ComboBox}" />
 
-                    <CheckBox Content="Advance Payment (not tied to an invoice)" IsChecked="{Binding IsAdvance}" Margin="0,0,0,10"/>
+                    <!-- Advance Payment Toggle -->
+                    <CheckBox Content="Advance Payment (not tied to an invoice)"
+                              IsChecked="{Binding IsAdvance}"
+                              FontSize="12"
+                              Margin="0,0,0,12"
+                              Style="{StaticResource MahApps.Styles.CheckBox}" />
 
+                    <!-- Outstanding Invoice Select (Conditional) -->
                     <StackPanel Visibility="{Binding IsAdvance, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
-                        <TextBlock Text="Outstanding Invoice" FontSize="12" Foreground="#344054"/>
-                        <ComboBox ItemsSource="{Binding OutstandingInvoices}" SelectedItem="{Binding SelectedInvoice}" DisplayMemberPath="InvoiceNumber"/>
+                        <ComboBox ItemsSource="{Binding OutstandingInvoices}"
+                                  SelectedItem="{Binding SelectedInvoice}"
+                                  DisplayMemberPath="InvoiceNumber"
+                                  mah:TextBoxHelper.Watermark="Outstanding Invoice"
+                                  mah:TextBoxHelper.UseFloatingWatermark="True"
+                                  FontSize="13"
+                                  Margin="0,0,0,12"
+                                  Style="{StaticResource MahApps.Styles.ComboBox}" />
                     </StackPanel>
 
-                    <TextBlock Text="Amount" FontSize="12" Foreground="#344054"/>
-                    <TextBox Text="{Binding Amount, UpdateSourceTrigger=PropertyChanged}"/>
+                    <!-- Amount -->
+                    <TextBox Text="{Binding Amount, UpdateSourceTrigger=PropertyChanged}"
+                             mah:TextBoxHelper.Watermark="Amount"
+                             mah:TextBoxHelper.UseFloatingWatermark="True"
+                             mah:TextBoxHelper.ClearTextButton="True"
+                             FontSize="13"
+                             Margin="0,0,0,12"
+                             Style="{StaticResource MahApps.Styles.TextBox}" />
 
-                    <TextBlock Text="Method" FontSize="12" Foreground="#344054"/>
-                    <ComboBox ItemsSource="{Binding PaymentMethods}" SelectedItem="{Binding Method}"/>
+                    <!-- Payment Method Select -->
+                    <ComboBox ItemsSource="{Binding PaymentMethods}"
+                              SelectedItem="{Binding Method}"
+                              mah:TextBoxHelper.Watermark="Method"
+                              mah:TextBoxHelper.UseFloatingWatermark="True"
+                              FontSize="13"
+                              Margin="0,0,0,12"
+                              Style="{StaticResource MahApps.Styles.ComboBox}" />
 
-                    <TextBlock Text="Reference # (optional)" FontSize="12" Foreground="#344054"/>
-                    <TextBox Text="{Binding ReferenceNumber, UpdateSourceTrigger=PropertyChanged}"/>
+                    <!-- Reference # -->
+                    <TextBox Text="{Binding ReferenceNumber, UpdateSourceTrigger=PropertyChanged}"
+                             mah:TextBoxHelper.Watermark="Reference # (optional)"
+                             mah:TextBoxHelper.UseFloatingWatermark="True"
+                             mah:TextBoxHelper.ClearTextButton="True"
+                             FontSize="13"
+                             Margin="0,0,0,12"
+                             Style="{StaticResource MahApps.Styles.TextBox}" />
 
-                    <TextBlock Text="Notes (optional)" FontSize="12" Foreground="#344054"/>
-                    <TextBox Text="{Binding Notes, UpdateSourceTrigger=PropertyChanged}"/>
+                    <!-- Notes -->
+                    <TextBox Text="{Binding Notes, UpdateSourceTrigger=PropertyChanged}"
+                             mah:TextBoxHelper.Watermark="Notes (optional)"
+                             mah:TextBoxHelper.UseFloatingWatermark="True"
+                             AcceptsReturn="True"
+                             Height="60"
+                             TextWrapping="Wrap"
+                             FontSize="13"
+                             Margin="0,0,0,16"
+                             Style="{StaticResource MahApps.Styles.TextBox}" />
 
-                    <TextBlock Text="{Binding ErrorMessage}" Foreground="#D92D20" FontSize="12" TextWrapping="Wrap" Margin="0,0,0,10"
-                               Visibility="{Binding ErrorMessage, Converter={StaticResource StringToVisibilityConverter}}"/>
+                    <!-- Error Display -->
+                    <TextBlock Text="{Binding ErrorMessage}"
+                               Foreground="#D92D20"
+                               FontSize="12"
+                               TextWrapping="Wrap"
+                               Margin="0,0,0,12"
+                               Visibility="{Binding ErrorMessage, Converter={StaticResource StringToVisibilityConverter}}" />
 
-                    <Button Content="Record Payment" Style="{StaticResource PrimaryButton}"
+                    <!-- Action Button -->
+                    <Button Content="Record Payment"
+                            Style="{StaticResource PrimaryButton}"
+                            Height="36"
                             Command="{Binding RecordPaymentCommand}"
-                            IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}"/>
+                            IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}" />
                 </StackPanel>
             </ScrollViewer>
         </Border>

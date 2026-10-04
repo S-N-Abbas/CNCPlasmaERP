@@ -42,7 +42,6 @@
     <Folder Include="ViewModels\Users\" />
     <Folder Include="ViewModels\Wages\" />
     <Folder Include="Views\Reports\" />
-    <Folder Include="Views\Users\" />
   </ItemGroup>
 
   <ItemGroup>
