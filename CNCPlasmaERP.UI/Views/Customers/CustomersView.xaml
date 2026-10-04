@@ -1,13 +1,22 @@
 <UserControl x:Class="CNCPlasmaERP.UI.Views.CustomersView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
              xmlns:views="clr-namespace:CNCPlasmaERP.UI.Views">
-    <TabControl Margin="0" Background="Transparent" BorderThickness="0">
-        <TabItem Header="Customers" DataContext="{Binding CustomerList}">
-            <views:CustomerListView/>
-        </TabItem>
-        <TabItem Header="Ledger" DataContext="{Binding Ledger}">
-            <views:CustomerLedgerView/>
-        </TabItem>
-    </TabControl>
+    <Grid Margin="16">
+        <TabControl Background="Transparent"
+                    BorderThickness="0"
+                    Style="{StaticResource MahApps.Styles.TabControl}">
+            <TabItem Header="Customers"
+                     DataContext="{Binding CustomerList}"
+                     Style="{StaticResource MahApps.Styles.TabItem}">
+                <views:CustomerListView />
+            </TabItem>
+            <TabItem Header="Ledger"
+                     DataContext="{Binding Ledger}"
+                     Style="{StaticResource MahApps.Styles.TabItem}">
+                <views:CustomerLedgerView />
+            </TabItem>
+        </TabControl>
+    </Grid>
 </UserControl>

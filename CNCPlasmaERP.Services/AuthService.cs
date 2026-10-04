@@ -122,6 +122,20 @@ namespace CNCPlasmaERP.Services
 
         public bool HasPermission(UserRole role, Permission permission) => RolePermissions.Has(role, permission);
 
+        public async Task<IReadOnlyList<User>> GetAllUsersAsync() => await _unitOfWork.Users.GetAllAsync();
+
+        public async Task SetUserActiveStatusAsync(int userId, bool isActive)
+        {
+            var user = await _unitOfWork.Users.GetByIdAsync(userId)
+                ?? throw new KeyNotFoundException($"User {userId} not found.");
+
+            user.IsActive = isActive;
+            _unitOfWork.Users.Update(user);
+            await _unitOfWork.SaveChangesAsync();
+
+            _logger.LogInformation("User '{Username}' {Status}", user.Username, isActive ? "activated" : "deactivated");
+        }
+
         private static (string HashBase64, string SaltBase64) HashPassword(string password)
         {
             var saltBytes = RandomNumberGenerator.GetBytes(SaltSizeBytes);

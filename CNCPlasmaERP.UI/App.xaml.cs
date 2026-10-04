@@ -164,6 +164,8 @@ namespace CNCPlasmaERP.UI
             services.AddTransient<ExpensesViewModel>();
 
             services.AddTransient<SettingsViewModel>();
+
+            services.AddTransient<UsersViewModel>();
         }
 
         /// <summary>

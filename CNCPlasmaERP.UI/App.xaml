@@ -17,8 +17,9 @@
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
         <converters:NullToVisibilityConverter x:Key="NullToVisibilityConverter" />
         <converters:InverseBooleanToVisibilityConverter x:Key="InverseBooleanToVisibilityConverter" />
+        <converters:BooleanToActiveTextConverter x:Key="BooleanToActiveTextConverter" />
 
-        <!-- Shared look for form inputs across every screen -->
+            <!-- Shared look for form inputs across every screen -->
         <Style TargetType="TextBox">
             <Setter Property="Padding" Value="8,7"/>
             <Setter Property="BorderBrush" Value="#D0D5DD"/>

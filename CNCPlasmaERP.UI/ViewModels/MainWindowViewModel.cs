@@ -51,10 +51,10 @@ namespace CNCPlasmaERP.UI.ViewModels
                 new NavigationItem { Title = "Jobs", Icon = "🛠️", RequiredPermission = Permission.ManageJobs, ViewModelType = typeof(JobsViewModel) },
                 new NavigationItem { Title = "Invoicing", Icon = "🧾", RequiredPermission = Permission.ManageInvoicesPayments, ViewModelType = typeof(InvoicingViewModel) },
                 new NavigationItem { Title = "Expenses", Icon = "💵", RequiredPermission = Permission.ManageExpenses, ViewModelType = typeof(ExpensesViewModel) },
-                new NavigationItem { Title = "Settings", Icon = "⚙️", RequiredPermission = Permission.ManageSettings, ViewModelType = typeof(SettingsViewModel) }
+                new NavigationItem { Title = "Settings", Icon = "⚙️", RequiredPermission = Permission.ManageSettings, ViewModelType = typeof(SettingsViewModel) },
+                new NavigationItem { Title = "Users", Icon = "🔑", RequiredPermission = Permission.ManageUsers, ViewModelType = typeof(UsersViewModel) }
 
-                // More entries (Reports, Users) are added here as their
-                // ViewModels/Views are built in upcoming modules.
+                // Reports is added here once built.
             };
 
             NavigationItems = new ObservableCollection<NavigationItem>(
@@ -83,12 +83,13 @@ namespace CNCPlasmaERP.UI.ViewModels
         {
             SelectedNavigationItem = item;
 
-            // Update selection state on all sidebar navigation items
-            foreach (var navItem in NavigationItems)
-            {
-                navItem.IsSelected = (navItem == item);
-            }
-
+            // Resolving via DI here — rather than the usual constructor injection —
+            // is the one deliberate exception to normal MVVM practice in this app.
+            // The shell has to create arbitrary feature ViewModels on demand as the
+            // user clicks around; that's exactly what a composition-root-adjacent
+            // "shell" ViewModel is for. _serviceProvider is whichever scope this
+            // ViewModel itself was resolved from (see the App.xaml.cs scope note),
+            // so every screen the user navigates to shares one DbContext for the session.
             CurrentViewModel = (ViewModelBase)_serviceProvider.GetRequiredService(item.ViewModelType);
         }
 

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using CNCPlasmaERP.Core.Authorization;
 using CNCPlasmaERP.Core.Entities;
@@ -23,5 +24,11 @@ namespace CNCPlasmaERP.Core.Interfaces
         Task ResetPasswordAsync(int userId, string newPassword);
 
         bool HasPermission(UserRole role, Permission permission);
+
+        /// <summary>All users, for the admin user-management screen.</summary>
+        Task<IReadOnlyList<User>> GetAllUsersAsync();
+
+        /// <summary>Activates or deactivates a user account — deactivated users cannot log in (see LoginAsync).</summary>
+        Task SetUserActiveStatusAsync(int userId, bool isActive);
     }
 }
