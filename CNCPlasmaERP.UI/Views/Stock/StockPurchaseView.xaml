@@ -114,6 +114,10 @@
                     <!-- Supplier Select -->
                     <ComboBox ItemsSource="{Binding Suppliers}"
                               SelectedItem="{Binding SelectedSupplier}"
+                              IsEditable="True"
+                              IsTextSearchEnabled="True"
+                              TextSearch.TextPath="Name"
+                              StaysOpenOnEdit="True"
                               DisplayMemberPath="Name"
                               mah:TextBoxHelper.Watermark="Supplier"
                               mah:TextBoxHelper.UseFloatingWatermark="True"

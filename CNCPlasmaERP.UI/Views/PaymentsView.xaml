@@ -78,6 +78,10 @@
                     <!-- Customer Select -->
                     <ComboBox ItemsSource="{Binding Customers}"
                               SelectedItem="{Binding SelectedCustomer}"
+                              IsEditable="True"
+                              IsTextSearchEnabled="True"
+                              TextSearch.TextPath="Name"
+                              StaysOpenOnEdit="True"
                               DisplayMemberPath="Name"
                               mah:TextBoxHelper.Watermark="Customer"
                               mah:TextBoxHelper.UseFloatingWatermark="True"

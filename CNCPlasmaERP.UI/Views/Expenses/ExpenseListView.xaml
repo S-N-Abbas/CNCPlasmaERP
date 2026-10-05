@@ -76,6 +76,10 @@
                     <!-- Category Selection -->
                     <ComboBox ItemsSource="{Binding Categories}"
                               SelectedItem="{Binding NewCategory}"
+                              IsEditable="True"
+                              IsTextSearchEnabled="True"
+                              TextSearch.TextPath="Name"
+                              StaysOpenOnEdit="True"
                               mah:TextBoxHelper.Watermark="Select Category"
                               mah:TextBoxHelper.UseFloatingWatermark="True"
                               FontSize="13"

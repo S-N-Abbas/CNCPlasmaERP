@@ -36,6 +36,10 @@
                             VerticalAlignment="Center">
                     <ComboBox ItemsSource="{Binding Customers}"
                               SelectedItem="{Binding NewJobCustomer}"
+                              IsEditable="True"
+                              IsTextSearchEnabled="True"
+                              TextSearch.TextPath="Name"
+                              StaysOpenOnEdit="True"
                               DisplayMemberPath="Name"
                               mah:TextBoxHelper.Watermark="Customer"
                               mah:TextBoxHelper.UseFloatingWatermark="True"
