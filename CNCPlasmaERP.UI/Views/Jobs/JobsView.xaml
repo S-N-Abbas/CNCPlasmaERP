@@ -85,6 +85,7 @@
                         Style="{StaticResource PrimaryButton}"
                         VerticalAlignment="Bottom"
                         Height="36"
+                        Width="100"
                         Command="{Binding CreateJobCommand}"
                         IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}" />
             </StackPanel>

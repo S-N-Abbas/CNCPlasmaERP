@@ -43,6 +43,8 @@
                         <Button Content="Generate Invoice"
                                 Style="{StaticResource PrimaryButton}"
                                 Command="{Binding GenerateInvoiceCommand}"
+                                Height="36"
+                                Width="150"
                                 IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}" />
                     </StackPanel>
                 </Border>

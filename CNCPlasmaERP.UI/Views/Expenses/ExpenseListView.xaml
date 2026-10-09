@@ -78,7 +78,7 @@
                               SelectedItem="{Binding NewCategory}"
                               IsEditable="True"
                               IsTextSearchEnabled="True"
-                              TextSearch.TextPath="Name"
+                              TextSearch.TextPath="."
                               StaysOpenOnEdit="True"
                               mah:TextBoxHelper.Watermark="Select Category"
                               mah:TextBoxHelper.UseFloatingWatermark="True"
@@ -145,6 +145,7 @@
                     <Button Content="Add Expense"
                             Style="{StaticResource PrimaryButton}"
                             Command="{Binding AddExpenseCommand}"
+                            Height="36"
                             IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}" />
                 </StackPanel>
             </ScrollViewer>

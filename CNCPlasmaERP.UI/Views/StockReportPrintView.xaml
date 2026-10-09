@@ -1,0 +1,60 @@
+<UserControl x:Class="CNCPlasmaERP.UI.Views.StockReportPrintView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Width="794" Height="1123" Background="White">
+    <Grid Margin="40">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0" Margin="0,0,0,20">
+            <TextBlock Text="{Binding Settings.CompanyName}" FontSize="22" FontWeight="Bold"/>
+            <TextBlock Text="Stock Report" FontSize="16" Foreground="#444444" Margin="0,4,0,0"/>
+            <TextBlock Text="{Binding PrintedOn, StringFormat='Printed: dd-MMM-yyyy HH:mm'}" FontSize="11" Foreground="#667085" Margin="0,4,0,0"/>
+            <Rectangle Height="1" Fill="#333333" Margin="0,12,0,0"/>
+        </StackPanel>
+
+        <Grid Grid.Row="1" Margin="0,0,0,6">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="70"/>
+                <ColumnDefinition Width="80"/>
+                <ColumnDefinition Width="90"/>
+                <ColumnDefinition Width="80"/>
+                <ColumnDefinition Width="90"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Column="0" Text="Material" FontSize="10" FontWeight="Bold"/>
+            <TextBlock Grid.Column="1" Text="Type" FontSize="10" FontWeight="Bold"/>
+            <TextBlock Grid.Column="2" Text="Gauge" FontSize="10" FontWeight="Bold"/>
+            <TextBlock Grid.Column="3" Text="Stock (Kg)" FontSize="10" FontWeight="Bold" TextAlignment="Right"/>
+            <TextBlock Grid.Column="4" Text="Sheets" FontSize="10" FontWeight="Bold" TextAlignment="Right"/>
+            <TextBlock Grid.Column="5" Text="Reorder (Kg)" FontSize="10" FontWeight="Bold" TextAlignment="Right"/>
+        </Grid>
+        <Rectangle Grid.Row="1" Height="1" Fill="#333333" VerticalAlignment="Bottom"/>
+
+        <ItemsControl Grid.Row="2" ItemsSource="{Binding Materials}" Margin="0,8,0,0">
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <Grid Margin="0,0,0,6">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="70"/>
+                            <ColumnDefinition Width="80"/>
+                            <ColumnDefinition Width="90"/>
+                            <ColumnDefinition Width="80"/>
+                            <ColumnDefinition Width="90"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="{Binding Name}" FontSize="11"/>
+                        <TextBlock Grid.Column="1" Text="{Binding Type}" FontSize="11"/>
+                        <TextBlock Grid.Column="2" Text="{Binding Gauge}" FontSize="11"/>
+                        <TextBlock Grid.Column="3" Text="{Binding CurrentStockKg, StringFormat=N2}" FontSize="11" TextAlignment="Right"/>
+                        <TextBlock Grid.Column="4" Text="{Binding CurrentStockCount}" FontSize="11" TextAlignment="Right"/>
+                        <TextBlock Grid.Column="5" Text="{Binding ReorderLevelKg, StringFormat=N2}" FontSize="11" TextAlignment="Right"/>
+                    </Grid>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+    </Grid>
+</UserControl>

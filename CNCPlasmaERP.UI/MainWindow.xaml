@@ -51,6 +51,47 @@
             <views:UsersView />
         </DataTemplate>
 
+        <DataTemplate DataType="{x:Type vm:ReportsViewModel}">
+            <views:ReportsView />
+        </DataTemplate>
+
+        <!-- Sidebar Navigation Button Style -->
+        <Style TargetType="Button"
+               x:Key="NavButton"
+               BasedOn="{StaticResource MahApps.Styles.Button.Flat}">
+            <Setter Property="Background"
+                    Value="Transparent" />
+            <Setter Property="Foreground"
+                    Value="{DynamicResource MahApps.Brushes.ThemeForeground}" />
+            <Setter Property="FontSize"
+                    Value="14" />
+            <Setter Property="Padding"
+                    Value="16,12" />
+            <Setter Property="HorizontalContentAlignment"
+                    Value="Left" />
+            <Setter Property="BorderThickness"
+                    Value="0" />
+            <Setter Property="Cursor"
+                    Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                CornerRadius="6"
+                                Margin="8,2">
+                            <ContentPresenter Margin="{TemplateBinding Padding}" />
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver"
+                         Value="True">
+                    <Setter Property="Background"
+                            Value="{DynamicResource MahApps.Brushes.Gray8}" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
     </mah:MetroWindow.Resources>
 
     <Grid>
@@ -91,9 +132,11 @@
                     <ItemsControl ItemsSource="{Binding NavigationItems}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
-                                <Button Content="{Binding Title}"
-                                        Command="{Binding DataContext.NavigateToCommand, RelativeSource={RelativeSource AncestorType=mah:MetroWindow}}"
-                                        CommandParameter="{Binding}">
+                                <Button Command="{Binding DataContext.NavigateToCommand, RelativeSource={RelativeSource AncestorType=mah:MetroWindow}}"
+                                        CommandParameter="{Binding}"
+                                        HorizontalContentAlignment="Left"
+                                        Padding="12,8"
+                                        Margin="0,2">
                                     <Button.Style>
                                         <Style TargetType="Button"
                                                BasedOn="{StaticResource NavButton}">
@@ -110,6 +153,25 @@
                                             </Style.Triggers>
                                         </Style>
                                     </Button.Style>
+
+                                    <!-- Button Layout: Icon + Title -->
+                                    <StackPanel Orientation="Horizontal"
+                                                VerticalAlignment="Center">
+                                        <!-- Text Glyph Icon -->
+                                        <TextBlock Text="{Binding Icon}"
+                                                   FontFamily="Segoe MDL2 Assets"
+                                                   FontSize="16"
+                                                   Width="24"
+                                                   Margin="0,0,10,0"
+                                                   VerticalAlignment="Center"
+                                                   TextAlignment="Center"
+                                                   Visibility="{Binding Icon, Converter={StaticResource StringToVisibilityConverter}}" />
+
+                                        <!-- Navigation Title -->
+                                        <TextBlock Text="{Binding Title}"
+                                                   FontSize="13"
+                                                   VerticalAlignment="Center" />
+                                    </StackPanel>
                                 </Button>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>

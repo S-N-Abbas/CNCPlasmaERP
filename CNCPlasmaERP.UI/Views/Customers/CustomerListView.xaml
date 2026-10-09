@@ -151,6 +151,7 @@
                     <Button Content="Add Customer"
                             Style="{StaticResource PrimaryButton}"
                             Command="{Binding AddCustomerCommand}"
+                            Height="36"
                             IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}" />
                 </StackPanel>
             </ScrollViewer>
