@@ -142,6 +142,8 @@ namespace CNCPlasmaERP.UI
 
             services.AddScoped<IReportService, ReportService>();
 
+            services.AddScoped<IScrapService, ScrapService>();
+
 
             // TODO: register ViewModels and Views here as they are built
             services.AddTransient<MainWindow>();
@@ -174,6 +176,8 @@ namespace CNCPlasmaERP.UI
             services.AddTransient<ProfitLossReportViewModel>();
             services.AddTransient<StockReportViewModel>();
             services.AddTransient<ReportsViewModel>();
+
+            services.AddTransient<ScrapViewModel>();
         }
 
         /// <summary>

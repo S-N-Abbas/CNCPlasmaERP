@@ -188,12 +188,16 @@ namespace CNCPlasmaERP.Services
 
             if (scrap is null)
             {
-                scrap = new Scrap { MaterialId = materialId, BalanceKg = 0 };
-                await _unitOfWork.Scraps.AddAsync(scrap);
+                // First scrap ever recorded for this material: create the row with its
+                // starting balance. Do NOT call Update() on it afterwards - a brand-new
+                // row has only a temporary key until SaveChanges runs.
+                await _unitOfWork.Scraps.AddAsync(new Scrap { MaterialId = materialId, BalanceKg = scrapKg });
+                return;
             }
 
+            // Existing row is already tracked (FirstOrDefaultAsync returns a tracked
+            // entity), so EF Core's change detection picks this up on SaveChanges.
             scrap.BalanceKg += scrapKg;
-            _unitOfWork.Scraps.Update(scrap);
         }
 
         public async Task RecordScrapSaleAsync(ScrapSale sale)

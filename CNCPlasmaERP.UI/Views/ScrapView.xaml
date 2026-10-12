@@ -1,0 +1,108 @@
+<UserControl x:Class="CNCPlasmaERP.UI.Views.ScrapView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid Margin="24">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="320"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- Left: balances on top, sales history below -->
+        <Grid Grid.Column="0" Margin="0,0,16,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <Grid Grid.Row="0" Margin="0,0,0,8">
+                <TextBlock Text="Scrap on hand" FontSize="15" FontWeight="SemiBold" Foreground="#101828" VerticalAlignment="Center"/>
+                <Button Content="Refresh" Style="{StaticResource SecondaryButton}" HorizontalAlignment="Right" Padding="12,6" FontSize="12"
+                        Command="{Binding LoadCommand}"
+                        IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}"/>
+            </Grid>
+
+            <Border Grid.Row="1" Background="White" CornerRadius="8" BorderBrush="#E4E7EC" BorderThickness="1">
+                <DataGrid ItemsSource="{Binding Balances}" AutoGenerateColumns="False" IsReadOnly="True"
+                          HeadersVisibility="Column" GridLinesVisibility="Horizontal" BorderThickness="0" RowHeight="34">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Material" Binding="{Binding Material.Name}" Width="*"/>
+                        <DataGridTextColumn Header="Gauge" Binding="{Binding Material.Gauge}" Width="90"/>
+                        <DataGridTextColumn Header="Type" Binding="{Binding Material.Type}" Width="90"/>
+                        <DataGridTextColumn Header="Unsold Scrap (Kg)" Binding="{Binding BalanceKg, StringFormat=N2}" Width="140"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </Border>
+
+            <TextBlock Grid.Row="2" Text="Recent scrap sales" FontSize="15" FontWeight="SemiBold" Foreground="#101828" Margin="0,16,0,8"/>
+
+            <Border Grid.Row="3" Background="White" CornerRadius="8" BorderBrush="#E4E7EC" BorderThickness="1">
+                <DataGrid ItemsSource="{Binding RecentSales}" AutoGenerateColumns="False" IsReadOnly="True"
+                          HeadersVisibility="Column" GridLinesVisibility="Horizontal" BorderThickness="0" RowHeight="34">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Date" Binding="{Binding SaleDate, StringFormat=dd-MMM-yyyy}" Width="100"/>
+                        <DataGridTextColumn Header="Material" Binding="{Binding Material.Name}" Width="*"/>
+                        <DataGridTextColumn Header="Buyer" Binding="{Binding BuyerName}" Width="130"/>
+                        <DataGridTextColumn Header="Kg" Binding="{Binding WeightKgSold, StringFormat=N2}" Width="70"/>
+                        <DataGridTextColumn Header="Rate/Kg" Binding="{Binding RatePerKg, StringFormat=N2}" Width="80"/>
+                        <DataGridTextColumn Header="Total" Binding="{Binding TotalAmount, StringFormat=N2}" Width="90"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </Border>
+        </Grid>
+
+        <!-- Right: record-sale form -->
+        <Border Grid.Column="1" Background="White" CornerRadius="8" BorderBrush="#E4E7EC" BorderThickness="1" Padding="16">
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <StackPanel>
+                    <TextBlock Text="Sell Scrap" FontSize="15" FontWeight="SemiBold" Foreground="#101828" Margin="0,0,0,14"/>
+
+                    <TextBlock Text="Material (only those with scrap on hand)" FontSize="12" Foreground="#344054"/>
+                    <ComboBox ItemsSource="{Binding SellableBalances}" SelectedItem="{Binding SelectedScrap}">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock>
+                                    <Run Text="{Binding Material.Name, Mode=OneWay}"/>
+                                    <Run Text=" ("/><Run Text="{Binding Material.Gauge, Mode=OneWay}"/><Run Text=") — "/>
+                                    <Run Text="{Binding BalanceKg, StringFormat=N2, Mode=OneWay}"/><Run Text=" Kg"/>
+                                </TextBlock>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+
+                    <TextBlock Text="Weight sold (Kg)" FontSize="12" Foreground="#344054"/>
+                    <TextBox Text="{Binding WeightKg, UpdateSourceTrigger=PropertyChanged}"/>
+
+                    <TextBlock Text="Rate / Kg" FontSize="12" Foreground="#344054"/>
+                    <TextBox Text="{Binding RatePerKg, UpdateSourceTrigger=PropertyChanged}"/>
+
+                    <Border Background="#F9FAFB" CornerRadius="6" Padding="10" Margin="0,0,0,10">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Total: " FontSize="13" Foreground="#667085"/>
+                            <TextBlock Text="{Binding TotalPreview, StringFormat=N2}" FontSize="13" FontWeight="Bold" Foreground="#101828"/>
+                        </StackPanel>
+                    </Border>
+
+                    <TextBlock Text="Buyer" FontSize="12" Foreground="#344054"/>
+                    <TextBox Text="{Binding BuyerName, UpdateSourceTrigger=PropertyChanged}"/>
+
+                    <TextBlock Text="Payment method" FontSize="12" Foreground="#344054"/>
+                    <ComboBox ItemsSource="{Binding PaymentMethods}" SelectedItem="{Binding Method}"/>
+
+                    <TextBlock Text="Notes (optional)" FontSize="12" Foreground="#344054"/>
+                    <TextBox Text="{Binding Notes, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" Height="50" TextWrapping="Wrap"/>
+
+                    <TextBlock Text="{Binding ErrorMessage}" Foreground="#D92D20" FontSize="12" TextWrapping="Wrap" Margin="0,0,0,10"
+                               Visibility="{Binding ErrorMessage, Converter={StaticResource StringToVisibilityConverter}}"/>
+                    <TextBlock Text="{Binding StatusMessage}" Foreground="#067647" FontSize="12" TextWrapping="Wrap" Margin="0,0,0,10"
+                               Visibility="{Binding StatusMessage, Converter={StaticResource StringToVisibilityConverter}}"/>
+
+                    <Button Content="Record Scrap Sale" Style="{StaticResource PrimaryButton}"
+                            Command="{Binding RecordSaleCommand}"
+                            IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}"/>
+                </StackPanel>
+            </ScrollViewer>
+        </Border>
+    </Grid>
+</UserControl>
