@@ -72,10 +72,10 @@
                     </ComboBox>
 
                     <TextBlock Text="Weight sold (Kg)" FontSize="12" Foreground="#344054"/>
-                    <TextBox Text="{Binding WeightKg, UpdateSourceTrigger=PropertyChanged}"/>
+                    <TextBox Text="{Binding WeightKg, Converter={StaticResource DecimalTextConverter}, UpdateSourceTrigger=PropertyChanged}"/>
 
                     <TextBlock Text="Rate / Kg" FontSize="12" Foreground="#344054"/>
-                    <TextBox Text="{Binding RatePerKg, UpdateSourceTrigger=PropertyChanged}"/>
+                    <TextBox Text="{Binding RatePerKg, Converter={StaticResource DecimalTextConverter}, UpdateSourceTrigger=PropertyChanged}"/>
 
                     <Border Background="#F9FAFB" CornerRadius="6" Padding="10" Margin="0,0,0,10">
                         <StackPanel Orientation="Horizontal">

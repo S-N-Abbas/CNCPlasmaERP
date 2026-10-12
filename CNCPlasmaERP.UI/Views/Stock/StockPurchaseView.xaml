@@ -151,7 +151,7 @@
                     </Grid>
 
                     <!-- Weight (Kg) -->
-                    <TextBox Text="{Binding WeightKg, UpdateSourceTrigger=PropertyChanged}"
+                    <TextBox Text="{Binding WeightKg, Converter={StaticResource DecimalTextConverter}, UpdateSourceTrigger=PropertyChanged}"
                              mah:TextBoxHelper.Watermark="Weight (Kg)"
                              mah:TextBoxHelper.UseFloatingWatermark="True"
                              FontSize="13"
@@ -159,7 +159,7 @@
                              Style="{StaticResource MahApps.Styles.TextBox}" />
 
                     <!-- Sheet Count -->
-                    <TextBox Text="{Binding SheetCount, UpdateSourceTrigger=PropertyChanged}"
+                    <TextBox Text="{Binding SheetCount, Converter={StaticResource DecimalTextConverter}, UpdateSourceTrigger=PropertyChanged}"
                              mah:TextBoxHelper.Watermark="Sheet Count (optional)"
                              mah:TextBoxHelper.UseFloatingWatermark="True"
                              FontSize="13"
@@ -167,7 +167,7 @@
                              Style="{StaticResource MahApps.Styles.TextBox}" />
 
                     <!-- Rate / Kg -->
-                    <TextBox Text="{Binding RatePerKg, UpdateSourceTrigger=PropertyChanged}"
+                    <TextBox Text="{Binding RatePerKg, Converter={StaticResource DecimalTextConverter}, UpdateSourceTrigger=PropertyChanged}"
                              mah:TextBoxHelper.Watermark="Rate / Kg"
                              mah:TextBoxHelper.UseFloatingWatermark="True"
                              FontSize="13"
@@ -175,7 +175,7 @@
                              Style="{StaticResource MahApps.Styles.TextBox}" />
 
                     <!-- Carriage Cost -->
-                    <TextBox Text="{Binding CarriageCost, UpdateSourceTrigger=PropertyChanged}"
+                    <TextBox Text="{Binding CarriageCost, Converter={StaticResource DecimalTextConverter}, UpdateSourceTrigger=PropertyChanged}"
                              mah:TextBoxHelper.Watermark="Carriage Cost (optional)"
                              mah:TextBoxHelper.UseFloatingWatermark="True"
                              FontSize="13"

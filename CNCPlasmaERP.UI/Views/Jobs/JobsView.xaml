@@ -51,7 +51,7 @@
                 <StackPanel Width="120"
                             Margin="0,0,16,0"
                             VerticalAlignment="Center">
-                    <TextBox Text="{Binding NewJobServiceCharges, UpdateSourceTrigger=PropertyChanged}"
+                    <TextBox Text="{Binding NewJobServiceCharges, Converter={StaticResource DecimalTextConverter}, UpdateSourceTrigger=PropertyChanged}"
                              mah:TextBoxHelper.Watermark="Service Charges"
                              mah:TextBoxHelper.UseFloatingWatermark="True"
                              FontSize="13"
@@ -62,7 +62,7 @@
                 <StackPanel Width="120"
                             Margin="0,0,16,0"
                             VerticalAlignment="Center">
-                    <TextBox Text="{Binding NewJobCarriageCharges, UpdateSourceTrigger=PropertyChanged}"
+                    <TextBox Text="{Binding NewJobCarriageCharges, Converter={StaticResource DecimalTextConverter}, UpdateSourceTrigger=PropertyChanged}"
                              mah:TextBoxHelper.Watermark="Carriage Charges"
                              mah:TextBoxHelper.UseFloatingWatermark="True"
                              FontSize="13"
@@ -178,12 +178,14 @@
                                     VerticalAlignment="Center">
                             <Button Content="Mark Completed"
                                     Style="{StaticResource SecondaryButton}"
+                                    Height="30"
                                     Margin="0,0,8,0"
                                     Command="{Binding MarkCompletedCommand}"
                                     IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}" />
                             <Button Content="Cancel Job"
                                     Style="{StaticResource SecondaryButton}"
                                     Command="{Binding CancelJobCommand}"
+                                    Height="30"
                                     IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}" />
                         </StackPanel>
                     </Grid>
@@ -214,7 +216,7 @@
                                           Style="{StaticResource MahApps.Styles.ComboBox}" />
 
                                 <!-- Weight Used -->
-                                <TextBox Text="{Binding UsageWeightKg, UpdateSourceTrigger=PropertyChanged}"
+                                <TextBox Text="{Binding UsageWeightKg, Converter={StaticResource DecimalTextConverter}, UpdateSourceTrigger=PropertyChanged}"
                                          mah:TextBoxHelper.Watermark="Weight Used (Kg)"
                                          mah:TextBoxHelper.UseFloatingWatermark="True"
                                          FontSize="12"
@@ -222,7 +224,7 @@
                                          Style="{StaticResource MahApps.Styles.TextBox}" />
 
                                 <!-- Sheets Used -->
-                                <TextBox Text="{Binding UsageSheetsUsed, UpdateSourceTrigger=PropertyChanged}"
+                                <TextBox Text="{Binding UsageSheetsUsed, Converter={StaticResource IntegerTextConverter}, UpdateSourceTrigger=PropertyChanged}"
                                          mah:TextBoxHelper.Watermark="Sheets Used (optional)"
                                          mah:TextBoxHelper.UseFloatingWatermark="True"
                                          FontSize="12"
@@ -230,7 +232,7 @@
                                          Style="{StaticResource MahApps.Styles.TextBox}" />
 
                                 <!-- Selling Rate -->
-                                <TextBox Text="{Binding UsageSellingRatePerKg, UpdateSourceTrigger=PropertyChanged}"
+                                <TextBox Text="{Binding UsageSellingRatePerKg, Converter={StaticResource DecimalTextConverter}, UpdateSourceTrigger=PropertyChanged}"
                                          mah:TextBoxHelper.Watermark="Selling Rate / Kg"
                                          mah:TextBoxHelper.UseFloatingWatermark="True"
                                          FontSize="12"
@@ -238,7 +240,7 @@
                                          Style="{StaticResource MahApps.Styles.TextBox}" />
 
                                 <!-- Scrap Generated -->
-                                <TextBox Text="{Binding UsageScrapGeneratedKg, UpdateSourceTrigger=PropertyChanged}"
+                                <TextBox Text="{Binding UsageScrapGeneratedKg, Converter={StaticResource DecimalTextConverter}, UpdateSourceTrigger=PropertyChanged}"
                                          mah:TextBoxHelper.Watermark="Scrap Generated (Kg)"
                                          mah:TextBoxHelper.UseFloatingWatermark="True"
                                          FontSize="12"

@@ -18,6 +18,8 @@
         <converters:NullToVisibilityConverter x:Key="NullToVisibilityConverter" />
         <converters:InverseBooleanToVisibilityConverter x:Key="InverseBooleanToVisibilityConverter" />
         <converters:BooleanToActiveTextConverter x:Key="BooleanToActiveTextConverter" />
+            <converters:DecimalTextConverter x:Key="DecimalTextConverter" />
+            <converters:IntegerTextConverter x:Key="IntegerTextConverter" />
 
             <!-- Shared look for form inputs across every screen -->
         <Style TargetType="TextBox">

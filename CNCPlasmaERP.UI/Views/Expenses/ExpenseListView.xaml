@@ -87,7 +87,7 @@
                               Style="{StaticResource MahApps.Styles.ComboBox}" />
 
                     <!-- Amount Input -->
-                    <TextBox Text="{Binding NewAmount, UpdateSourceTrigger=PropertyChanged}"
+                    <TextBox Text="{Binding NewAmount, Converter={StaticResource DecimalTextConverter}, UpdateSourceTrigger=PropertyChanged}"
                              mah:TextBoxHelper.Watermark="Amount"
                              mah:TextBoxHelper.UseFloatingWatermark="True"
                              mah:TextBoxHelper.ClearTextButton="True"

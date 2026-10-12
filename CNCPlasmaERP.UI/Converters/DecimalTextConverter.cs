@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Data;
 
@@ -17,10 +18,41 @@ namespace CNCPlasmaERP.UI.Converters
     /// </summary>
     public class DecimalTextConverter : IValueConverter
     {
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture) =>
-            value is decimal d && d != 0 ? d.ToString("G29", culture) : string.Empty;
+        private decimal? _lastParsedValue;
 
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) =>
-            decimal.TryParse(value as string, NumberStyles.Number, culture, out var result) ? result : 0m;
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value is not decimal d)
+            {
+                return string.Empty;
+            }
+
+            if (_lastParsedValue.HasValue && _lastParsedValue.Value == d)
+            {
+                return Binding.DoNothing;
+            }
+
+            _lastParsedValue = null;
+            return d == 0 ? string.Empty : d.ToString("G29", culture);
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            var text = (value as string)?.Trim() ?? string.Empty;
+
+            if (decimal.TryParse(text, NumberStyles.AllowLeadingSign | NumberStyles.AllowDecimalPoint, culture, out var result))
+            {
+                _lastParsedValue = result;
+                return result;
+            }
+
+            // Not a number yet. If it could still BECOME one ("", "-", "." or "-."),
+            // keep the text as typed. Anything else (letters) is cleared on redraw.
+            var separator = Regex.Escape(culture.NumberFormat.NumberDecimalSeparator);
+            var isPartialNumber = Regex.IsMatch(text, $@"^-?\d*{separator}?\d*$");
+
+            _lastParsedValue = isPartialNumber ? 0m : null;
+            return 0m;
+        }
     }
 }

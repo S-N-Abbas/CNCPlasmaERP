@@ -125,14 +125,14 @@
                              Margin="0,0,0,12"
                              Style="{StaticResource MahApps.Styles.TextBox}" />
 
-                    <TextBox Text="{Binding NewOpeningBalance, UpdateSourceTrigger=PropertyChanged}"
+                    <TextBox Text="{Binding NewOpeningBalance, Converter={StaticResource DecimalTextConverter}, UpdateSourceTrigger=PropertyChanged}"
                              mah:TextBoxHelper.Watermark="Opening Balance"
                              mah:TextBoxHelper.UseFloatingWatermark="True"
                              FontSize="13"
                              Margin="0,0,0,12"
                              Style="{StaticResource MahApps.Styles.TextBox}" />
 
-                    <TextBox Text="{Binding NewCreditLimit, UpdateSourceTrigger=PropertyChanged}"
+                    <TextBox Text="{Binding NewCreditLimit, Converter={StaticResource DecimalTextConverter}, UpdateSourceTrigger=PropertyChanged}"
                              mah:TextBoxHelper.Watermark="Credit Limit (optional)"
                              mah:TextBoxHelper.UseFloatingWatermark="True"
                              FontSize="13"

@@ -85,7 +85,7 @@
                              Style="{StaticResource MahApps.Styles.TextBox}" />
 
                     <!-- Amount -->
-                    <TextBox Text="{Binding Amount, UpdateSourceTrigger=PropertyChanged}"
+                    <TextBox Text="{Binding Amount, Converter={StaticResource DecimalTextConverter}, UpdateSourceTrigger=PropertyChanged}"
                              mah:TextBoxHelper.Watermark="Amount"
                              mah:TextBoxHelper.UseFloatingWatermark="True"
                              mah:TextBoxHelper.ClearTextButton="True"

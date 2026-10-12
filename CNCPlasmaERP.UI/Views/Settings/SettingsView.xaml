@@ -105,7 +105,7 @@
                                   Margin="0,0,0,14"
                                   Style="{StaticResource MahApps.Styles.CheckBox}" />
 
-                        <TextBox Text="{Binding Settings.TaxPercentage, UpdateSourceTrigger=PropertyChanged}"
+                        <TextBox Text="{Binding Settings.TaxPercentage, Converter={StaticResource DecimalTextConverter}, UpdateSourceTrigger=PropertyChanged}"
                                  mah:TextBoxHelper.Watermark="Tax Percentage (%)"
                                  mah:TextBoxHelper.UseFloatingWatermark="True"
                                  FontSize="13"
