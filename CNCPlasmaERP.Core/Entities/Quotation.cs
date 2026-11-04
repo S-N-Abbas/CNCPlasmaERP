@@ -1,7 +1,8 @@
-using System;
-using System.Collections.Generic;
 using CNCPlasmaERP.Core.Common;
 using CNCPlasmaERP.Core.Enums;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace CNCPlasmaERP.Core.Entities
 {
@@ -28,6 +29,9 @@ namespace CNCPlasmaERP.Core.Entities
         /// <summary>Set when this quotation is later turned into an actual Job. Purely informational link.</summary>
         public int? ConvertedToJobId { get; set; }
         public Job? ConvertedToJob { get; set; }
+
+        [NotMapped]
+        public decimal EstimatedTotal => Items.Sum(i => i.EstimatedAmount) + EstimatedServiceCharges + EstimatedCarriageCharges;
 
         public ICollection<QuotationItem> Items { get; set; } = new List<QuotationItem>();
     }

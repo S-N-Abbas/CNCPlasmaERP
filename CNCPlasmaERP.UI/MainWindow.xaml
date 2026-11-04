@@ -55,6 +55,10 @@
             <views:ReportsView />
         </DataTemplate>
 
+        <DataTemplate DataType="{x:Type vm:QuotationsViewModel}">
+            <views:QuotationsView />
+        </DataTemplate>
+
         <!-- Sidebar Navigation Button Style -->
         <Style TargetType="Button"
                x:Key="NavButton"

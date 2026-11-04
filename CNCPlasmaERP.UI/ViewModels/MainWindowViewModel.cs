@@ -53,7 +53,8 @@ namespace CNCPlasmaERP.UI.ViewModels
     new NavigationItem { Title = "Expenses",  Icon = "\uE8C7", RequiredPermission = Permission.ManageExpenses, ViewModelType = typeof(ExpensesViewModel) },
     new NavigationItem { Title = "Settings",  Icon = "\uE713", RequiredPermission = Permission.ManageSettings, ViewModelType = typeof(SettingsViewModel) },
     new NavigationItem { Title = "Users",     Icon = "\uE77B", RequiredPermission = Permission.ManageUsers, ViewModelType = typeof(UsersViewModel) },
-    new NavigationItem { Title = "Reports",   Icon = "\uE9F9", RequiredPermission = Permission.ViewFinancialReports, ViewModelType = typeof(ReportsViewModel) }
+    new NavigationItem { Title = "Reports",   Icon = "\uE9F9", RequiredPermission = Permission.ViewFinancialReports, ViewModelType = typeof(ReportsViewModel) },
+    new NavigationItem { Title = "Quotations", Icon = "\uE70F", RequiredPermission = Permission.ManageJobs, ViewModelType = typeof(QuotationsViewModel) },
 };
 
             NavigationItems = new ObservableCollection<NavigationItem>(
