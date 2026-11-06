@@ -119,7 +119,7 @@ namespace CNCPlasmaERP.UI.ViewModels
         {
             if (ItemWeightKg > 0 && ItemRatePerKg > 0)
             {
-                ItemAmount = Math.Round(ItemWeightKg * ItemRatePerKg, 2);
+                ItemAmount = Math.Round(ItemWeightKg * ItemRatePerKg, 2, MidpointRounding.AwayFromZero);
             }
         }
 

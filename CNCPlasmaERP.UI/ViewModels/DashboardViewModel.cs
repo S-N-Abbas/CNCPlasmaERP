@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
+using CNCPlasmaERP.Core.Authorization;
 using CNCPlasmaERP.Core.Entities;
 using CNCPlasmaERP.Core.Interfaces;
 using CNCPlasmaERP.UI.ViewModels.Base;
@@ -11,11 +12,13 @@ namespace CNCPlasmaERP.UI.ViewModels
     public partial class DashboardViewModel : ViewModelBase
     {
         private readonly IStockService _stockService;
+        private readonly ICurrentUserContext _currentUserContext;
 
         public DashboardViewModel(IStockService stockService, ICurrentUserContext currentUserContext, ILogger<DashboardViewModel> logger)
             : base(logger)
         {
             _stockService = stockService;
+            _currentUserContext = currentUserContext;
 
             WelcomeMessage = $"Welcome, {currentUserContext.CurrentUser?.FullName}";
 
@@ -33,6 +36,8 @@ namespace CNCPlasmaERP.UI.ViewModels
         {
             await RunBusyAsync(async () =>
             {
+                if (!_currentUserContext.HasPermission(Permission.ManageStock))
+                    return;
                 var lowStock = await _stockService.GetLowStockMaterialsAsync();
 
                 LowStockMaterials.Clear();

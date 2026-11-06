@@ -114,13 +114,14 @@
                                  Style="{StaticResource MahApps.Styles.TextBox}" />
 
                         <!-- Temporary Password -->
-                        <TextBox Text="{Binding NewPassword, UpdateSourceTrigger=PropertyChanged}"
-                                 mah:TextBoxHelper.Watermark="Temporary Password"
+                        <PasswordBox x:Name="NewPasswordBox"
+                                 mah:TextBoxHelper.Watermark="Temporary Password (12+ characters)"
                                  mah:TextBoxHelper.UseFloatingWatermark="True"
                                  mah:TextBoxHelper.ClearTextButton="True"
                                  FontSize="13"
                                  Margin="0,0,0,12"
-                                 Style="{StaticResource MahApps.Styles.TextBox}" />
+                                 Style="{StaticResource MahApps.Styles.PasswordBox}"
+                                 PasswordChanged="NewPasswordBox_PasswordChanged" />
 
                         <!-- Role Select -->
                         <ComboBox ItemsSource="{Binding Roles}"
@@ -155,13 +156,14 @@
                         </TextBlock>
 
                         <!-- New Password -->
-                        <TextBox Text="{Binding ResetPassword, UpdateSourceTrigger=PropertyChanged}"
-                                 mah:TextBoxHelper.Watermark="New Password"
+                        <PasswordBox x:Name="ResetPasswordBox"
+                                 mah:TextBoxHelper.Watermark="New Password (12+ characters)"
                                  mah:TextBoxHelper.UseFloatingWatermark="True"
                                  mah:TextBoxHelper.ClearTextButton="True"
                                  FontSize="13"
                                  Margin="0,0,0,16"
-                                 Style="{StaticResource MahApps.Styles.TextBox}" />
+                                 Style="{StaticResource MahApps.Styles.PasswordBox}"
+                                 PasswordChanged="ResetPasswordBox_PasswordChanged" />
 
                         <!-- Action Button -->
                         <Button Content="Reset Password"

@@ -68,8 +68,18 @@ namespace CNCPlasmaERP.UI
 
                 base.OnStartup(e);
 
-                // Await asynchronously instead of GetAwaiter().GetResult()
-                await SeedDefaultAdminUserAsync(_host.Services);
+                await MigrateDatabaseAsync(_host.Services);
+
+                if (!await HasAnyUsersAsync(_host.Services))
+                {
+                    using var setupScope = _host.Services.CreateScope();
+                    var setupWindow = setupScope.ServiceProvider.GetRequiredService<InitialAdminWindow>();
+                    if (setupWindow.ShowDialog() != true)
+                    {
+                        Shutdown();
+                        return;
+                    }
+                }
 
                 using (var loginScope = _host.Services.CreateScope())
                 {
@@ -78,6 +88,19 @@ namespace CNCPlasmaERP.UI
 
                     if (loginResult != true)
                     {
+                        Shutdown();
+                        return;
+                    }
+                }
+
+                var currentUserContext = _host.Services.GetRequiredService<ICurrentUserContext>();
+                if (currentUserContext.CurrentUser?.MustChangePassword == true)
+                {
+                    using var passwordScope = _host.Services.CreateScope();
+                    var passwordWindow = passwordScope.ServiceProvider.GetRequiredService<PasswordChangeWindow>();
+                    if (passwordWindow.ShowDialog() != true)
+                    {
+                        currentUserContext.Clear();
                         Shutdown();
                         return;
                     }
@@ -151,6 +174,8 @@ namespace CNCPlasmaERP.UI
             services.AddTransient<MainWindow>();
             services.AddTransient<LoginViewModel>();
             services.AddTransient<LoginWindow>();
+            services.AddTransient<InitialAdminWindow>();
+            services.AddTransient<PasswordChangeWindow>();
             services.AddTransient<MainWindowViewModel>();
             services.AddTransient<DashboardViewModel>();
             services.AddTransient<MaterialsViewModel>();
@@ -226,21 +251,18 @@ namespace CNCPlasmaERP.UI
             };
         }
 
-        private static async Task SeedDefaultAdminUserAsync(IServiceProvider services)
+        private static async Task MigrateDatabaseAsync(IServiceProvider services)
+        {
+            using var scope = services.CreateScope();
+            var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            await db.Database.MigrateAsync();
+        }
+
+        private static async Task<bool> HasAnyUsersAsync(IServiceProvider services)
         {
             using var scope = services.CreateScope();
             var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
-            var authService = scope.ServiceProvider.GetRequiredService<IAuthService>();
-
-            var anyUsers = (await unitOfWork.Users.GetAllAsync()).Count > 0;
-            if (anyUsers)
-            {
-                return;
-            }
-
-            await authService.CreateUserAsync("admin", "Admin@123", "System Administrator", UserRole.Admin);
-
-            Log.Warning("No users existed — created a default account (username: admin, password: Admin@123). Log in and change this password immediately.");
+            return (await unitOfWork.Users.GetAllAsync()).Count > 0;
         }
 
         protected override void OnExit(ExitEventArgs e)

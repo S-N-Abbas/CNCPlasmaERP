@@ -27,6 +27,17 @@ namespace CNCPlasmaERP.UI.ViewModels
 
         public ObservableCollection<Supplier> Suppliers { get; } = new();
 
+        /// <summary>The grid row being edited. Null means the form is in "add new" mode.</summary>
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(IsEditing))]
+        [NotifyPropertyChangedFor(nameof(FormTitle))]
+        [NotifyPropertyChangedFor(nameof(FormButtonText))]
+        private Supplier? selectedSupplier;
+
+        public bool IsEditing => SelectedSupplier is not null;
+        public string FormTitle => IsEditing ? "Edit Supplier" : "Add Supplier";
+        public string FormButtonText => IsEditing ? "Save Changes" : "Add Supplier";
+
         [ObservableProperty]
         private string newName = string.Empty;
 
@@ -42,22 +53,59 @@ namespace CNCPlasmaERP.UI.ViewModels
         [ObservableProperty]
         private string? newAddress;
 
-        [RelayCommand]
-        private async Task LoadAsync()
+        [ObservableProperty]
+        private bool newIsActive = true;
+
+        partial void OnSelectedSupplierChanged(Supplier? value)
         {
-            await RunBusyAsync(async () =>
+            ErrorMessage = null;
+
+            if (value is null)
             {
-                var suppliers = await _supplierService.GetAllAsync();
-                Suppliers.Clear();
-                foreach (var supplier in suppliers)
-                {
-                    Suppliers.Add(supplier);
-                }
-            });
+                ResetForm();
+                return;
+            }
+
+            NewName = value.Name;
+            NewContactPerson = value.ContactPerson;
+            NewPhone = value.Phone;
+            NewEmail = value.Email;
+            NewAddress = value.Address;
+            NewIsActive = value.IsActive;
+        }
+
+        private void ResetForm()
+        {
+            NewName = string.Empty;
+            NewContactPerson = null;
+            NewPhone = null;
+            NewEmail = null;
+            NewAddress = null;
+            NewIsActive = true;
         }
 
         [RelayCommand]
-        private async Task AddSupplierAsync()
+        private async Task LoadAsync() => await RunBusyAsync(LoadDataAsync);
+
+        /// <summary>Raw helper (not RunBusyAsync-wrapped) so SaveSupplierAsync can reuse it after its own RunBusyAsync has started.</summary>
+        private async Task LoadDataAsync()
+        {
+            var suppliers = await _supplierService.GetAllAsync();
+            Suppliers.Clear();
+            foreach (var supplier in suppliers)
+            {
+                Suppliers.Add(supplier);
+            }
+        }
+
+        [RelayCommand]
+        private void CancelEdit()
+        {
+            SelectedSupplier = null; // leaving edit mode also resets the form
+        }
+
+        [RelayCommand]
+        private async Task SaveSupplierAsync()
         {
             await RunBusyAsync(async () =>
             {
@@ -67,26 +115,44 @@ namespace CNCPlasmaERP.UI.ViewModels
                     return;
                 }
 
+                var editingId = SelectedSupplier?.Id;
+
                 var supplier = new Supplier
                 {
+                    Id = editingId ?? 0,
                     Name = NewName.Trim(),
                     ContactPerson = NewContactPerson,
                     Phone = NewPhone,
                     Email = NewEmail,
                     Address = NewAddress,
-                    IsActive = true
+                    IsActive = editingId.HasValue ? NewIsActive : true
                 };
 
-                await _supplierService.CreateAsync(supplier);
-                Suppliers.Add(supplier);
+                int savedId;
+                if (editingId.HasValue)
+                {
+                    await _supplierService.UpdateAsync(supplier);
+                    savedId = editingId.Value;
+                }
+                else
+                {
+                    var created = await _supplierService.CreateAsync(supplier);
+                    savedId = created.Id;
+                }
 
-                WeakReferenceMessenger.Default.Send(new SupplierCreatedMessage(supplier));
+                SelectedSupplier = null;
+                await LoadDataAsync();
 
-                NewName = string.Empty;
-                NewContactPerson = null;
-                NewPhone = null;
-                NewEmail = null;
-                NewAddress = null;
+                // Only a NEW supplier needs announcing: nothing else is open
+                // alongside this screen that shows an editable supplier list.
+                if (!editingId.HasValue)
+                {
+                    var fresh = Suppliers.FirstOrDefault(s => s.Id == savedId);
+                    if (fresh is not null)
+                    {
+                        WeakReferenceMessenger.Default.Send(new SupplierCreatedMessage(fresh));
+                    }
+                }
             });
         }
 

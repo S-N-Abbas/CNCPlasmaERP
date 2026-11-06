@@ -76,9 +76,9 @@ namespace CNCPlasmaERP.UI.ViewModels
                     return;
                 }
 
-                if (NewPassword.Length < 6)
+                if (NewPassword.Length < 12)
                 {
-                    ErrorMessage = "Password must be at least 6 characters.";
+                    ErrorMessage = "Password must be at least 12 characters.";
                     return;
                 }
 
@@ -124,9 +124,9 @@ namespace CNCPlasmaERP.UI.ViewModels
                     return;
                 }
 
-                if (string.IsNullOrWhiteSpace(ResetPassword) || ResetPassword.Length < 6)
+                if (string.IsNullOrWhiteSpace(ResetPassword) || ResetPassword.Length < 12)
                 {
-                    ErrorMessage = "Enter a new password of at least 6 characters.";
+                    ErrorMessage = "Enter a new password of at least 12 characters.";
                     return;
                 }
 

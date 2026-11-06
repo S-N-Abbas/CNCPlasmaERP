@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using CNCPlasmaERP.Core.Entities;
+using CNCPlasmaERP.Core.Authorization;
 using CNCPlasmaERP.Core.Enums;
 using CNCPlasmaERP.Core.Exceptions;
 using CNCPlasmaERP.Core.Interfaces;
@@ -16,38 +17,50 @@ namespace CNCPlasmaERP.Services
         private readonly IUnitOfWork _unitOfWork;
         private readonly INumberSequenceService _numberSequenceService;
         private readonly ILogger<QuotationService> _logger;
+        private readonly ICurrentUserContext _currentUserContext;
 
         public QuotationService(
             IUnitOfWork unitOfWork,
             INumberSequenceService numberSequenceService,
+            ICurrentUserContext currentUserContext,
             ILogger<QuotationService> logger)
         {
             _unitOfWork = unitOfWork;
             _numberSequenceService = numberSequenceService;
+            _currentUserContext = currentUserContext;
             _logger = logger;
         }
 
         // Both read queries use AsNoTracking: they only display data, and this
         // app shares one DbContext for the whole session.
-        public async Task<IReadOnlyList<Quotation>> GetAllAsync() =>
-            await _unitOfWork.Quotations.Query()
+        public async Task<IReadOnlyList<Quotation>> GetAllAsync()
+        {
+            ServiceAuthorization.Require(_currentUserContext, Permission.ManageJobs);
+            return await _unitOfWork.Quotations.Query()
                 .AsNoTracking()
                 .Include(q => q.Customer)
                 .Include(q => q.Items)
                 .OrderByDescending(q => q.QuotationDate)
                 .ThenByDescending(q => q.Id)
                 .ToListAsync();
+        }
 
-        public async Task<Quotation?> GetWithDetailsAsync(int quotationId) =>
-            await _unitOfWork.Quotations.Query()
+        public async Task<Quotation?> GetWithDetailsAsync(int quotationId)
+        {
+            ServiceAuthorization.Require(_currentUserContext, Permission.ManageJobs);
+            return await _unitOfWork.Quotations.Query()
                 .AsNoTracking()
                 .Include(q => q.Customer)
                 .Include(q => q.Items).ThenInclude(i => i.Material)
                 .Include(q => q.ConvertedToJob)
                 .FirstOrDefaultAsync(q => q.Id == quotationId);
+        }
 
         public async Task<Quotation> CreateAsync(Quotation quotation, IEnumerable<QuotationItem> items)
         {
+            ServiceAuthorization.Require(_currentUserContext, Permission.ManageJobs);
+            if (quotation.EstimatedServiceCharges < 0 || quotation.EstimatedCarriageCharges < 0)
+                throw new BusinessValidationException("Quotation charges cannot be negative.");
             if (quotation.ExpiryDate.HasValue && quotation.ExpiryDate.Value.Date < DateTime.Today)
             {
                 throw new InvalidQuotationException("The expiry date cannot be in the past.");
@@ -57,16 +70,28 @@ namespace CNCPlasmaERP.Services
             // the MaterialId. The caller's items may have a Material navigation
             // object attached purely for on-screen display; adding THAT to the
             // context would make EF Core try to INSERT a duplicate Material row.
-            quotation.Items = items
-                .Select(i => new QuotationItem
+            var itemCopies = items.Select(i =>
+            {
+                if (i.EstimatedWeightKg.HasValue != i.EstimatedRatePerKg.HasValue)
+                    throw new BusinessValidationException("Quotation item weight and rate must either both be supplied or both be omitted.");
+
+                var amount = i.EstimatedWeightKg.HasValue
+                    ? Math.Round(i.EstimatedWeightKg.Value * i.EstimatedRatePerKg!.Value, 2, MidpointRounding.AwayFromZero)
+                    : Math.Round(i.EstimatedAmount, 2, MidpointRounding.AwayFromZero);
+                if (amount <= 0)
+                    throw new BusinessValidationException("Quotation item amount must be greater than zero.");
+
+                return new QuotationItem
                 {
                     MaterialId = i.MaterialId,
                     Description = i.Description,
                     EstimatedWeightKg = i.EstimatedWeightKg,
                     EstimatedRatePerKg = i.EstimatedRatePerKg,
-                    EstimatedAmount = i.EstimatedAmount
-                })
-                .ToList();
+                    EstimatedAmount = amount
+                };
+            }).ToList();
+
+            quotation.Items = itemCopies;
 
             quotation.QuotationNumber = await _numberSequenceService.GenerateQuotationNumberAsync();
             quotation.Status = QuotationStatus.Draft;
@@ -83,6 +108,7 @@ namespace CNCPlasmaERP.Services
 
         public async Task MarkAsSentAsync(int quotationId)
         {
+            ServiceAuthorization.Require(_currentUserContext, Permission.ManageJobs);
             var quotation = await _unitOfWork.Quotations.GetByIdAsync(quotationId)
                 ?? throw new KeyNotFoundException($"Quotation {quotationId} not found.");
 

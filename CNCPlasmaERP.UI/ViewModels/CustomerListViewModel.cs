@@ -27,6 +27,17 @@ namespace CNCPlasmaERP.UI.ViewModels
 
         public ObservableCollection<Customer> Customers { get; } = new();
 
+        /// <summary>The grid row being edited. Null means the form is in "add new" mode.</summary>
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(IsEditing))]
+        [NotifyPropertyChangedFor(nameof(FormTitle))]
+        [NotifyPropertyChangedFor(nameof(FormButtonText))]
+        private Customer? selectedCustomer;
+
+        public bool IsEditing => SelectedCustomer is not null;
+        public string FormTitle => IsEditing ? "Edit Customer" : "Add Customer";
+        public string FormButtonText => IsEditing ? "Save Changes" : "Add Customer";
+
         [ObservableProperty]
         private string newName = string.Empty;
 
@@ -42,28 +53,70 @@ namespace CNCPlasmaERP.UI.ViewModels
         [ObservableProperty]
         private string? newAddress;
 
+        /// <summary>Editable only when adding. While editing it is shown read-only: the balance is owned by the ledger.</summary>
         [ObservableProperty]
         private decimal newOpeningBalance;
 
         [ObservableProperty]
         private decimal? newCreditLimit;
 
-        [RelayCommand]
-        private async Task LoadAsync()
+        [ObservableProperty]
+        private bool newIsActive = true;
+
+        partial void OnSelectedCustomerChanged(Customer? value)
         {
-            await RunBusyAsync(async () =>
+            ErrorMessage = null;
+
+            if (value is null)
             {
-                var customers = await _customerService.GetAllAsync();
-                Customers.Clear();
-                foreach (var customer in customers)
-                {
-                    Customers.Add(customer);
-                }
-            });
+                ResetForm();
+                return;
+            }
+
+            NewName = value.Name;
+            NewContactPerson = value.ContactPerson;
+            NewPhone = value.Phone;
+            NewEmail = value.Email;
+            NewAddress = value.Address;
+            NewOpeningBalance = value.OpeningBalance;
+            NewCreditLimit = value.CreditLimit;
+            NewIsActive = value.IsActive;
+        }
+
+        private void ResetForm()
+        {
+            NewName = string.Empty;
+            NewContactPerson = null;
+            NewPhone = null;
+            NewEmail = null;
+            NewAddress = null;
+            NewOpeningBalance = 0;
+            NewCreditLimit = null;
+            NewIsActive = true;
         }
 
         [RelayCommand]
-        private async Task AddCustomerAsync()
+        private async Task LoadAsync() => await RunBusyAsync(LoadDataAsync);
+
+        /// <summary>Raw helper (not RunBusyAsync-wrapped) so SaveCustomerAsync can reuse it after its own RunBusyAsync has started.</summary>
+        private async Task LoadDataAsync()
+        {
+            var customers = await _customerService.GetAllAsync();
+            Customers.Clear();
+            foreach (var customer in customers)
+            {
+                Customers.Add(customer);
+            }
+        }
+
+        [RelayCommand]
+        private void CancelEdit()
+        {
+            SelectedCustomer = null; // leaving edit mode also resets the form
+        }
+
+        [RelayCommand]
+        private async Task SaveCustomerAsync()
         {
             await RunBusyAsync(async () =>
             {
@@ -73,30 +126,51 @@ namespace CNCPlasmaERP.UI.ViewModels
                     return;
                 }
 
+                var editingId = SelectedCustomer?.Id;
+
+                // A detached object carrying only the form's values. When
+                // editing, the service copies just the editable fields —
+                // balances are never touched.
                 var customer = new Customer
                 {
+                    Id = editingId ?? 0,
                     Name = NewName.Trim(),
                     ContactPerson = NewContactPerson,
                     Phone = NewPhone,
                     Email = NewEmail,
                     Address = NewAddress,
-                    OpeningBalance = NewOpeningBalance,
+                    OpeningBalance = editingId.HasValue ? 0 : NewOpeningBalance,
                     CreditLimit = NewCreditLimit,
-                    IsActive = true
+                    IsActive = editingId.HasValue ? NewIsActive : true
                 };
 
-                await _customerService.CreateAsync(customer);
-                Customers.Add(customer);
+                int savedId;
+                if (editingId.HasValue)
+                {
+                    await _customerService.UpdateAsync(customer);
+                    savedId = editingId.Value;
+                }
+                else
+                {
+                    var created = await _customerService.CreateAsync(customer);
+                    savedId = created.Id;
+                }
 
-                WeakReferenceMessenger.Default.Send(new CustomerCreatedMessage(customer));
+                SelectedCustomer = null;
+                await LoadDataAsync();
 
-                NewName = string.Empty;
-                NewContactPerson = null;
-                NewPhone = null;
-                NewEmail = null;
-                NewAddress = null;
-                NewOpeningBalance = 0;
-                NewCreditLimit = null;
+                var fresh = Customers.FirstOrDefault(c => c.Id == savedId);
+                if (fresh is not null)
+                {
+                    if (editingId.HasValue)
+                    {
+                        WeakReferenceMessenger.Default.Send(new CustomerUpdatedMessage(fresh));
+                    }
+                    else
+                    {
+                        WeakReferenceMessenger.Default.Send(new CustomerCreatedMessage(fresh));
+                    }
+                }
             });
         }
 

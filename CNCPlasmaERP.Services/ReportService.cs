@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using CNCPlasmaERP.Core.Entities;
+using CNCPlasmaERP.Core.Authorization;
 using CNCPlasmaERP.Core.Enums;
 using CNCPlasmaERP.Core.Interfaces;
 using CNCPlasmaERP.Core.Reports;
@@ -15,15 +16,18 @@ namespace CNCPlasmaERP.Services
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger<ReportService> _logger;
+        private readonly ICurrentUserContext _currentUserContext;
 
-        public ReportService(IUnitOfWork unitOfWork, ILogger<ReportService> logger)
+        public ReportService(IUnitOfWork unitOfWork, ICurrentUserContext currentUserContext, ILogger<ReportService> logger)
         {
             _unitOfWork = unitOfWork;
             _logger = logger;
+            _currentUserContext = currentUserContext;
         }
 
         public async Task<ProfitByMaterialReport> GetProfitByMaterialAsync(DateTime fromDate, DateTime toDate)
         {
+            ServiceAuthorization.Require(_currentUserContext, Permission.ViewFinancialReports);
             var inclusiveToDate = toDate.Date.AddDays(1).AddTicks(-1);
 
             // Materialize first (ToListAsync), then group/aggregate in memory —
@@ -67,6 +71,7 @@ namespace CNCPlasmaERP.Services
 
         public async Task<ProfitLossSummary> GetProfitLossSummaryAsync(DateTime fromDate, DateTime toDate)
         {
+            ServiceAuthorization.Require(_currentUserContext, Permission.ViewFinancialReports);
             var inclusiveToDate = toDate.Date.AddDays(1).AddTicks(-1);
 
             var invoices = await _unitOfWork.Invoices.Query()
@@ -91,7 +96,9 @@ namespace CNCPlasmaERP.Services
 
             var expenses = await _unitOfWork.Expenses.FindAsync(
                 e => e.ExpenseDate >= fromDate.Date && e.ExpenseDate <= inclusiveToDate);
-            var totalExpenses = expenses.Sum(e => e.Amount);
+            var stockPurchases = await _unitOfWork.StockPurchases.FindAsync(
+                p => p.PurchaseDate >= fromDate.Date && p.PurchaseDate <= inclusiveToDate);
+            var totalExpenses = expenses.Sum(e => e.Amount) + stockPurchases.Sum(p => p.CarriageCost);
 
             return new ProfitLossSummary
             {
@@ -108,6 +115,7 @@ namespace CNCPlasmaERP.Services
 
         public async Task<IReadOnlyList<Material>> GetStockReportAsync()
         {
+            ServiceAuthorization.Require(_currentUserContext, Permission.ManageStock);
             var materials = await _unitOfWork.Materials.FindAsync(m => m.IsActive);
             return materials.OrderBy(m => m.Name).ToList();
         }

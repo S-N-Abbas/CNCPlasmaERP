@@ -6,7 +6,7 @@
         <TabItem Header="Profit &amp; Loss" DataContext="{Binding ProfitLoss}">
             <views:ProfitLossReportView/>
         </TabItem>
-        <TabItem Header="Stock Report" DataContext="{Binding StockReport}">
+        <TabItem Header="Stock Report" IsEnabled="{Binding CanViewStockReport}" DataContext="{Binding StockReport}">
             <views:StockReportView/>
         </TabItem>
     </TabControl>

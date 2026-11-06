@@ -1,8 +1,10 @@
 using System.Threading.Tasks;
+using System.Data;
 using CNCPlasmaERP.Core.Entities;
 using CNCPlasmaERP.Core.Interfaces;
 using CNCPlasmaERP.Data.Context;
 using CNCPlasmaERP.Data.Repositories;
+using Microsoft.EntityFrameworkCore;
 
 namespace CNCPlasmaERP.Data
 {
@@ -55,9 +57,14 @@ namespace CNCPlasmaERP.Data
 
         public Task<int> SaveChangesAsync() => _context.SaveChangesAsync();
 
-        public async Task<IUnitOfWorkTransaction> BeginTransactionAsync()
+        public Task<IUnitOfWorkTransaction> BeginTransactionAsync() => BeginTransactionAsync(IsolationLevel.ReadCommitted);
+
+        public async Task<IUnitOfWorkTransaction> BeginTransactionAsync(IsolationLevel isolationLevel)
         {
-            var transaction = await _context.Database.BeginTransactionAsync();
+            if (_context.Database.CurrentTransaction is not null)
+                return new EfUnitOfWorkTransaction(_context.Database.CurrentTransaction, ownsTransaction: false);
+
+            var transaction = await _context.Database.BeginTransactionAsync(isolationLevel);
             return new EfUnitOfWorkTransaction(transaction);
         }
 

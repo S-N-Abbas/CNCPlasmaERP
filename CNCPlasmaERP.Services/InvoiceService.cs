@@ -1,10 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Data;
 using System.Threading.Tasks;
 using CNCPlasmaERP.Core.Entities;
-using CNCPlasmaERP.Core.Enums;
+using CNCPlasmaERP.Core.Authorization;
 using CNCPlasmaERP.Core.Exceptions;
+using CNCPlasmaERP.Core.Enums;
 using CNCPlasmaERP.Core.Interfaces;
 using Microsoft.Extensions.Logging;
 
@@ -24,21 +26,25 @@ namespace CNCPlasmaERP.Services
         private readonly ILedgerService _ledgerService;
         private readonly INumberSequenceService _numberSequenceService;
         private readonly ILogger<InvoiceService> _logger;
+        private readonly ICurrentUserContext _currentUserContext;
 
         public InvoiceService(
             IUnitOfWork unitOfWork,
             ILedgerService ledgerService,
             INumberSequenceService numberSequenceService,
+            ICurrentUserContext currentUserContext,
             ILogger<InvoiceService> logger)
         {
             _unitOfWork = unitOfWork;
             _ledgerService = ledgerService;
             _numberSequenceService = numberSequenceService;
+            _currentUserContext = currentUserContext;
             _logger = logger;
         }
 
         public async Task<Invoice> CreateInvoiceFromJobAsync(int jobId, int? createdByUserId)
         {
+            ServiceAuthorization.Require(_currentUserContext, Permission.ManageInvoicesPayments);
             // Clean slate: clears any entity left tracked by an earlier,
             // unrelated operation in this shared session-wide DbContext before
             // this operation touches anything.
@@ -46,6 +52,9 @@ namespace CNCPlasmaERP.Services
 
             var job = await _unitOfWork.Jobs.GetWithDetailsAsync(jobId)
                 ?? throw new KeyNotFoundException($"Job {jobId} not found.");
+
+            if (job.Status != JobStatus.Completed)
+                throw new InvalidJobStateException($"Job {job.JobNumber} must be completed before it can be invoiced.");
 
             if (job.Invoice is not null)
             {
@@ -61,7 +70,7 @@ namespace CNCPlasmaERP.Services
 
             var settings = await _unitOfWork.Settings.GetSettingsAsync();
 
-            await using var transaction = await _unitOfWork.BeginTransactionAsync();
+            await using var transaction = await _unitOfWork.BeginTransactionAsync(IsolationLevel.Serializable);
             try
             {
                 var items = BuildInvoiceItems(job);
@@ -69,7 +78,7 @@ namespace CNCPlasmaERP.Services
                 var subTotal = items.Sum(i => i.Amount);
                 var taxApplied = settings.TaxEnabled;
                 var taxPercentage = taxApplied ? settings.TaxPercentage : 0m;
-                var taxAmount = Math.Round(subTotal * taxPercentage / 100m, 2);
+                var taxAmount = Math.Round(subTotal * taxPercentage / 100m, 2, MidpointRounding.AwayFromZero);
                 var grandTotal = subTotal + taxAmount;
 
                 var invoiceNumber = await _numberSequenceService.GenerateInvoiceNumberAsync();
@@ -149,7 +158,7 @@ namespace CNCPlasmaERP.Services
                     Description = $"{usage.Material.Name} ({usage.Material.Gauge})",
                     QuantityKg = usage.WeightUsedKg,
                     RatePerKg = usage.SellingRatePerKg,
-                    Amount = usage.SellingAmount
+                    Amount = Math.Round(usage.SellingAmount, 2, MidpointRounding.AwayFromZero)
                 });
             }
 
@@ -159,7 +168,7 @@ namespace CNCPlasmaERP.Services
                 {
                     ItemType = InvoiceItemType.Service,
                     Description = "Cutting / Bending Service Charges",
-                    Amount = job.ServiceCharges
+                    Amount = Math.Round(job.ServiceCharges, 2, MidpointRounding.AwayFromZero)
                 });
             }
 
@@ -169,21 +178,28 @@ namespace CNCPlasmaERP.Services
                 {
                     ItemType = InvoiceItemType.Carriage,
                     Description = "Carriage / Delivery Charges",
-                    Amount = job.CarriageCharges
+                    Amount = Math.Round(job.CarriageCharges, 2, MidpointRounding.AwayFromZero)
                 });
             }
 
             return items;
         }
 
-        public Task<Invoice?> GetInvoiceWithDetailsAsync(int invoiceId) =>
-            _unitOfWork.Invoices.GetWithDetailsAsync(invoiceId);
+        public Task<Invoice?> GetInvoiceWithDetailsAsync(int invoiceId)
+        {
+            ServiceAuthorization.Require(_currentUserContext, Permission.ManageInvoicesPayments);
+            return _unitOfWork.Invoices.GetWithDetailsAsync(invoiceId);
+        }
 
-        public Task<IReadOnlyList<Invoice>> GetAllInvoicesAsync() =>
-            _unitOfWork.Invoices.GetAllWithCustomerAsync();
+        public Task<IReadOnlyList<Invoice>> GetAllInvoicesAsync()
+        {
+            ServiceAuthorization.Require(_currentUserContext, Permission.ManageInvoicesPayments);
+            return _unitOfWork.Invoices.GetAllWithCustomerAsync();
+        }
 
         public async Task<IReadOnlyList<Invoice>> GetOutstandingInvoicesForCustomerAsync(int customerId)
         {
+            ServiceAuthorization.Require(_currentUserContext, Permission.ManageInvoicesPayments);
             var invoices = await _unitOfWork.Invoices.GetByCustomerAsync(customerId);
             return invoices
                 .Where(i => i.Status == InvoiceStatus.Unpaid || i.Status == InvoiceStatus.PartiallyPaid)

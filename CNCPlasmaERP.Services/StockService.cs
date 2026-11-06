@@ -1,9 +1,11 @@
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 using CNCPlasmaERP.Core.Entities;
 using CNCPlasmaERP.Core.Exceptions;
 using CNCPlasmaERP.Core.Interfaces;
+using CNCPlasmaERP.Core.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -19,19 +21,27 @@ namespace CNCPlasmaERP.Services
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger<StockService> _logger;
+        private readonly ICurrentUserContext _currentUserContext;
 
-        public StockService(IUnitOfWork unitOfWork, ILogger<StockService> logger)
+        public StockService(IUnitOfWork unitOfWork, ICurrentUserContext currentUserContext, ILogger<StockService> logger)
         {
             _unitOfWork = unitOfWork;
+            _currentUserContext = currentUserContext;
             _logger = logger;
         }
 
         public async Task RecordPurchaseAsync(StockPurchase purchase)
         {
+            ServiceAuthorization.Require(_currentUserContext, Permission.ManageStock);
+            if (purchase.WeightKg <= 0 || purchase.RatePerKg <= 0 || purchase.CarriageCost < 0 || purchase.SheetCount < 0)
+                throw new BusinessValidationException("Purchase weight and rate must be positive; carriage and sheet count cannot be negative.");
+
+            await using var transaction = await _unitOfWork.BeginTransactionAsync(IsolationLevel.Serializable);
+
             var material = await _unitOfWork.Materials.GetByIdAsync(purchase.MaterialId)
                 ?? throw new KeyNotFoundException($"Material {purchase.MaterialId} not found.");
 
-            purchase.MaterialCost = purchase.WeightKg * purchase.RatePerKg;
+            purchase.MaterialCost = System.Math.Round(purchase.WeightKg * purchase.RatePerKg, 2, System.MidpointRounding.AwayFromZero);
 
             await _unitOfWork.StockPurchases.AddAsync(purchase);
 
@@ -44,6 +54,7 @@ namespace CNCPlasmaERP.Services
             _unitOfWork.Materials.Update(material);
 
             await _unitOfWork.SaveChangesAsync();
+            await transaction.CommitAsync();
 
             _logger.LogInformation(
                 "Stock purchase recorded: {WeightKg} Kg of Material {MaterialId} at {RatePerKg}/Kg from Supplier {SupplierId}. New balance: {NewBalanceKg} Kg",
@@ -51,12 +62,18 @@ namespace CNCPlasmaERP.Services
         }
 
         public async Task<IReadOnlyList<StockPurchase>> GetRecentPurchasesAsync(int count = 50) =>
-            await _unitOfWork.StockPurchases.Query()
+            await GetPurchasesAuthorizedAsync(count);
+
+        private async Task<IReadOnlyList<StockPurchase>> GetPurchasesAuthorizedAsync(int count)
+        {
+            ServiceAuthorization.Require(_currentUserContext, Permission.ManageStock);
+            return await _unitOfWork.StockPurchases.Query()
             .Include(p => p.Material)
             .Include(p => p.Supplier)
             .OrderByDescending(p => p.PurchaseDate)
             .Take(count)
             .ToListAsync();
+        }
 
         public async Task<JobMaterialUsage> RecordJobMaterialUsageAsync(
             int jobId,
@@ -67,6 +84,14 @@ namespace CNCPlasmaERP.Services
             decimal scrapGeneratedKg,
             string? notes)
         {
+            ServiceAuthorization.Require(_currentUserContext, Permission.ManageJobs);
+            if (weightUsedKg <= 0 || sellingRatePerKg <= 0 || scrapGeneratedKg < 0 || sheetsUsed < 0)
+                throw new BusinessValidationException("Material weight and selling rate must be positive; scrap and sheet count cannot be negative.");
+            if (scrapGeneratedKg > weightUsedKg)
+                throw new BusinessValidationException("Scrap generated cannot exceed the material weight used.");
+
+            await using var transaction = await _unitOfWork.BeginTransactionAsync(IsolationLevel.Serializable);
+
             var material = await _unitOfWork.Materials.GetByIdAsync(materialId)
                 ?? throw new KeyNotFoundException($"Material {materialId} not found.");
 
@@ -114,6 +139,7 @@ namespace CNCPlasmaERP.Services
             }
 
             await _unitOfWork.SaveChangesAsync();
+            await transaction.CommitAsync();
 
             _logger.LogInformation(
                 "Job {JobId} consumed {WeightKg} Kg of Material {MaterialId} at cost {CostRate}/Kg, sold at {SellRate}/Kg (scrap generated: {ScrapKg} Kg)",
@@ -125,6 +151,8 @@ namespace CNCPlasmaERP.Services
 
         public async Task ReverseJobMaterialUsageAsync(int jobMaterialUsageId)
         {
+            ServiceAuthorization.Require(_currentUserContext, Permission.ManageJobs);
+            await using var transaction = await _unitOfWork.BeginTransactionAsync(IsolationLevel.Serializable);
             var usage = await _unitOfWork.JobMaterialUsages.GetByIdAsync(jobMaterialUsageId)
                 ?? throw new KeyNotFoundException($"Job material usage {jobMaterialUsageId} not found.");
 
@@ -159,6 +187,7 @@ namespace CNCPlasmaERP.Services
             _unitOfWork.JobMaterialUsages.Remove(usage); // soft-deleted via BaseEntity — audit trail preserved
 
             await _unitOfWork.SaveChangesAsync();
+            await transaction.CommitAsync();
 
             _logger.LogInformation(
                 "Reversed job material usage {UsageId}: restored {WeightKg} Kg to Material {MaterialId}",
@@ -177,6 +206,7 @@ namespace CNCPlasmaERP.Services
             var lastPurchase = await _unitOfWork.StockPurchases.Query()
                 .Where(p => p.MaterialId == materialId)
                 .OrderByDescending(p => p.PurchaseDate)
+                .ThenByDescending(p => p.Id)
                 .FirstOrDefaultAsync();
 
             return lastPurchase?.RatePerKg ?? material.DefaultRatePerKg ?? 0m;
@@ -202,6 +232,12 @@ namespace CNCPlasmaERP.Services
 
         public async Task RecordScrapSaleAsync(ScrapSale sale)
         {
+            ServiceAuthorization.Require(_currentUserContext, Permission.ManageStock);
+            if (sale.WeightKgSold <= 0 || sale.RatePerKg <= 0)
+                throw new BusinessValidationException("Scrap sale weight and rate must be greater than zero.");
+
+            await using var transaction = await _unitOfWork.BeginTransactionAsync(IsolationLevel.Serializable);
+
             var scrap = await _unitOfWork.Scraps.FirstOrDefaultAsync(s => s.MaterialId == sale.MaterialId)
                 ?? throw new InsufficientScrapException(sale.MaterialId, sale.WeightKgSold, 0);
 
@@ -210,7 +246,7 @@ namespace CNCPlasmaERP.Services
                 throw new InsufficientScrapException(sale.MaterialId, sale.WeightKgSold, scrap.BalanceKg);
             }
 
-            sale.TotalAmount = sale.WeightKgSold * sale.RatePerKg;
+            sale.TotalAmount = System.Math.Round(sale.WeightKgSold * sale.RatePerKg, 2, System.MidpointRounding.AwayFromZero);
 
             scrap.BalanceKg -= sale.WeightKgSold;
             _unitOfWork.Scraps.Update(scrap);
@@ -218,15 +254,19 @@ namespace CNCPlasmaERP.Services
             await _unitOfWork.ScrapSales.AddAsync(sale);
 
             await _unitOfWork.SaveChangesAsync();
+            await transaction.CommitAsync();
 
             _logger.LogInformation(
                 "Scrap sale recorded: {WeightKg} Kg of Material {MaterialId} sold to {Buyer} for {Amount}",
                 sale.WeightKgSold, sale.MaterialId, sale.BuyerName, sale.TotalAmount);
         }
 
-        public async Task<IReadOnlyList<Material>> GetLowStockMaterialsAsync() =>
-            await _unitOfWork.Materials.Query()
+        public async Task<IReadOnlyList<Material>> GetLowStockMaterialsAsync()
+        {
+            ServiceAuthorization.Require(_currentUserContext, Permission.ManageStock);
+            return await _unitOfWork.Materials.Query()
                 .Where(m => m.IsActive && m.ReorderLevelKg != null && m.CurrentStockKg <= m.ReorderLevelKg)
                 .ToListAsync();
+        }
     }
 }

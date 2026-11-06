@@ -8,6 +8,7 @@ using CNCPlasmaERP.Core.Enums;
 using CNCPlasmaERP.Core.Exceptions;
 using CNCPlasmaERP.Core.Interfaces;
 using Microsoft.Extensions.Logging;
+using Microsoft.EntityFrameworkCore;
 
 namespace CNCPlasmaERP.Services
 {
@@ -24,10 +25,12 @@ namespace CNCPlasmaERP.Services
 
         private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger<AuthService> _logger;
+        private readonly ICurrentUserContext _currentUserContext;
 
-        public AuthService(IUnitOfWork unitOfWork, ILogger<AuthService> logger)
+        public AuthService(IUnitOfWork unitOfWork, ICurrentUserContext currentUserContext, ILogger<AuthService> logger)
         {
             _unitOfWork = unitOfWork;
+            _currentUserContext = currentUserContext;
             _logger = logger;
         }
 
@@ -58,6 +61,17 @@ namespace CNCPlasmaERP.Services
 
         public async Task<User> CreateUserAsync(string username, string password, string fullName, UserRole role)
         {
+            if (_currentUserContext.IsLoggedIn)
+                ServiceAuthorization.Require(_currentUserContext, Permission.ManageUsers);
+            else if (role != UserRole.Admin || (await _unitOfWork.Users.GetAllAsync()).Count != 0)
+                throw new AuthorizationException("Only first-run administrator setup is allowed before login.");
+
+            if (string.IsNullOrWhiteSpace(username) || username.Trim().Length > 50 || string.IsNullOrWhiteSpace(fullName) || fullName.Trim().Length > 150)
+                throw new BusinessValidationException("Username and full name are required and must fit within the allowed length.");
+            if (string.IsNullOrWhiteSpace(password) || password.Length < 12)
+                throw new BusinessValidationException("Password must be at least 12 characters.");
+            username = username.Trim();
+            fullName = fullName.Trim();
             var existing = await _unitOfWork.Users.FirstOrDefaultAsync(u => u.Username == username);
             if (existing is not null)
             {
@@ -73,7 +87,8 @@ namespace CNCPlasmaERP.Services
                 PasswordSalt = salt,
                 FullName = fullName,
                 Role = role,
-                IsActive = true
+                IsActive = true,
+                MustChangePassword = _currentUserContext.IsLoggedIn
             };
 
             await _unitOfWork.Users.AddAsync(user);
@@ -86,6 +101,9 @@ namespace CNCPlasmaERP.Services
 
         public async Task ChangePasswordAsync(int userId, string currentPassword, string newPassword)
         {
+            if (_currentUserContext.CurrentUser?.Id != userId)
+                throw new AuthorizationException("You may only change your own password.");
+            ValidateNewPassword(newPassword);
             var user = await _unitOfWork.Users.GetByIdAsync(userId)
                 ?? throw new KeyNotFoundException($"User {userId} not found.");
 
@@ -97,6 +115,7 @@ namespace CNCPlasmaERP.Services
             var (hash, salt) = HashPassword(newPassword);
             user.PasswordHash = hash;
             user.PasswordSalt = salt;
+            user.MustChangePassword = false;
 
             _unitOfWork.Users.Update(user);
             await _unitOfWork.SaveChangesAsync();
@@ -106,12 +125,15 @@ namespace CNCPlasmaERP.Services
 
         public async Task ResetPasswordAsync(int userId, string newPassword)
         {
+            ServiceAuthorization.Require(_currentUserContext, Permission.ManageUsers);
+            ValidateNewPassword(newPassword);
             var user = await _unitOfWork.Users.GetByIdAsync(userId)
                 ?? throw new KeyNotFoundException($"User {userId} not found.");
 
             var (hash, salt) = HashPassword(newPassword);
             user.PasswordHash = hash;
             user.PasswordSalt = salt;
+            user.MustChangePassword = true;
 
             _unitOfWork.Users.Update(user);
             await _unitOfWork.SaveChangesAsync();
@@ -122,12 +144,36 @@ namespace CNCPlasmaERP.Services
 
         public bool HasPermission(UserRole role, Permission permission) => RolePermissions.Has(role, permission);
 
-        public async Task<IReadOnlyList<User>> GetAllUsersAsync() => await _unitOfWork.Users.GetAllAsync();
+        public async Task<IReadOnlyList<User>> GetAllUsersAsync()
+        {
+            ServiceAuthorization.Require(_currentUserContext, Permission.ManageUsers);
+            var users = await _unitOfWork.Users.GetAllAsync();
+            return users.Select(user => new User
+            {
+                Id = user.Id,
+                Username = user.Username,
+                FullName = user.FullName,
+                Role = user.Role,
+                IsActive = user.IsActive,
+                MustChangePassword = user.MustChangePassword,
+                LastLoginAt = user.LastLoginAt
+            }).ToList();
+        }
 
         public async Task SetUserActiveStatusAsync(int userId, bool isActive)
         {
+            ServiceAuthorization.Require(_currentUserContext, Permission.ManageUsers);
+            if (!isActive && _currentUserContext.CurrentUser?.Id == userId)
+                throw new BusinessValidationException("You cannot deactivate your own account.");
             var user = await _unitOfWork.Users.GetByIdAsync(userId)
                 ?? throw new KeyNotFoundException($"User {userId} not found.");
+
+            if (!isActive && user.Role == UserRole.Admin && user.IsActive)
+            {
+                var anotherActiveAdmin = await _unitOfWork.Users.Query().AnyAsync(u => u.Id != userId && u.Role == UserRole.Admin && u.IsActive);
+                if (!anotherActiveAdmin)
+                    throw new BusinessValidationException("The last active administrator cannot be deactivated.");
+            }
 
             user.IsActive = isActive;
             _unitOfWork.Users.Update(user);
@@ -141,6 +187,12 @@ namespace CNCPlasmaERP.Services
             var saltBytes = RandomNumberGenerator.GetBytes(SaltSizeBytes);
             var hashBytes = Rfc2898DeriveBytes.Pbkdf2(password, saltBytes, Iterations, HashAlgorithmName.SHA256, HashSizeBytes);
             return (Convert.ToBase64String(hashBytes), Convert.ToBase64String(saltBytes));
+        }
+
+        private static void ValidateNewPassword(string password)
+        {
+            if (string.IsNullOrWhiteSpace(password) || password.Length < 12)
+                throw new BusinessValidationException("Password must be at least 12 characters.");
         }
 
         private static bool VerifyPassword(string password, string storedHashBase64, string storedSaltBase64)

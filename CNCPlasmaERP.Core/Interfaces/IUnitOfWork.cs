@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using System.Data;
 using CNCPlasmaERP.Core.Entities;
 
 namespace CNCPlasmaERP.Core.Interfaces
@@ -36,6 +37,7 @@ namespace CNCPlasmaERP.Core.Interfaces
         Task<int> SaveChangesAsync();
 
         Task<IUnitOfWorkTransaction> BeginTransactionAsync();
+        Task<IUnitOfWorkTransaction> BeginTransactionAsync(IsolationLevel isolationLevel);
 
         /// <summary>
         /// Detaches every currently-tracked entity, without disposing the

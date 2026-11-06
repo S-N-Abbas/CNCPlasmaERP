@@ -1,3 +1,4 @@
+using System;
 using System.ComponentModel.DataAnnotations.Schema;
 using CNCPlasmaERP.Core.Common;
 
@@ -35,10 +36,10 @@ namespace CNCPlasmaERP.Core.Entities
         public string? Notes { get; set; }
 
         [NotMapped]
-        public decimal CostAmount => WeightUsedKg * CostRatePerKg;
+        public decimal CostAmount => Math.Round(WeightUsedKg * CostRatePerKg, 2, MidpointRounding.AwayFromZero);
 
         [NotMapped]
-        public decimal SellingAmount => WeightUsedKg * SellingRatePerKg;
+        public decimal SellingAmount => Math.Round(WeightUsedKg * SellingRatePerKg, 2, MidpointRounding.AwayFromZero);
 
         [NotMapped]
         public decimal ProfitAmount => SellingAmount - CostAmount;

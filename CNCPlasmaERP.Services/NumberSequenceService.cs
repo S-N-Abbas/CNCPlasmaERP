@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using System.Data;
 using CNCPlasmaERP.Core.Entities;
 using CNCPlasmaERP.Core.Interfaces;
 using Microsoft.Extensions.Logging;
@@ -11,13 +12,8 @@ namespace CNCPlasmaERP.Services
     /// e.g. "INV-2026-0001". The sequence counters live on the single AppSettings
     /// row and reset to 1 whenever the calendar year changes.
     ///
-    /// NOTE — concurrency: this reads-then-writes AppSettings without a database
-    /// row lock. That's safe for a single-PC deployment (today's setup). Once this
-    /// system is shared across multiple terminals against one SQL Server, two
-    /// terminals generating a number in the same instant could theoretically get
-    /// the same sequence value. If that happens in practice, harden this with a
-    /// raw SQL atomic "UPDATE ... OUTPUT" statement or an application lock
-    /// (sp_getapplock) instead of the read-then-save pattern used here.
+    /// Sequence read and increment run under a serializable database transaction
+    /// so separate terminals cannot issue the same document number.
     /// </summary>
     public class NumberSequenceService : INumberSequenceService
     {
@@ -61,6 +57,7 @@ namespace CNCPlasmaERP.Services
             Func<AppSettings, int> getYear,
             Action<AppSettings, int> setYear)
         {
+            await using var transaction = await _unitOfWork.BeginTransactionAsync(IsolationLevel.Serializable);
             var settings = await _unitOfWork.Settings.GetSettingsAsync();
             var currentYear = DateTime.Now.Year;
 
@@ -77,6 +74,7 @@ namespace CNCPlasmaERP.Services
             setSequence(settings, sequence);
 
             await _unitOfWork.Settings.SaveAsync(settings);
+            await transaction.CommitAsync();
 
             var number = $"{getPrefix(settings)}-{currentYear}-{sequence:D4}";
             _logger.LogInformation("Generated document number {Number}", number);
