@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using CNCPlasmaERP.Data.Context;
 using Microsoft.EntityFrameworkCore;
@@ -17,10 +18,19 @@ namespace CNCPlasmaERP.Data
     {
         public ApplicationDbContext CreateDbContext(string[] args)
         {
-            var configuration = new ConfigurationBuilder()
+            var useTestProfile = string.Equals(
+                Environment.GetEnvironmentVariable("CNCPLASMAERP_PROFILE"),
+                "Test",
+                StringComparison.OrdinalIgnoreCase);
+
+            var configurationBuilder = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile("appsettings.json", optional: true)
-                .Build();
+                .AddJsonFile("appsettings.json", optional: true);
+            if (useTestProfile)
+            {
+                configurationBuilder.AddJsonFile("appsettings.Test.json", optional: false);
+            }
+            var configuration = configurationBuilder.Build();
 
             var connectionString = configuration.GetConnectionString("DefaultConnection")
                 ?? "Server=(localdb)\\mssqllocaldb;Database=CNCPlasmaERP;Trusted_Connection=True;MultipleActiveResultSets=true";

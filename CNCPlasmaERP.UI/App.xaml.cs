@@ -34,10 +34,19 @@ namespace CNCPlasmaERP.UI
             // Prevent WPF from shutting down when the LoginWindow closes before MainWindow opens
             ShutdownMode = ShutdownMode.OnExplicitShutdown;
 
-            var bootstrapConfiguration = new ConfigurationBuilder()
+            var useTestProfile = string.Equals(
+                Environment.GetEnvironmentVariable("CNCPLASMAERP_PROFILE"),
+                "Test",
+                StringComparison.OrdinalIgnoreCase);
+
+            var bootstrapConfigurationBuilder = new ConfigurationBuilder()
                 .SetBasePath(AppContext.BaseDirectory)
-                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: false)
-                .Build();
+                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: false);
+            if (useTestProfile)
+            {
+                bootstrapConfigurationBuilder.AddJsonFile("appsettings.Test.json", optional: false, reloadOnChange: false);
+            }
+            var bootstrapConfiguration = bootstrapConfigurationBuilder.Build();
 
             Log.Logger = new LoggerConfiguration()
                 .ReadFrom.Configuration(bootstrapConfiguration)
@@ -54,6 +63,10 @@ namespace CNCPlasmaERP.UI
                     {
                         builder.SetBasePath(AppContext.BaseDirectory);
                         builder.AddJsonFile("appsettings.json", optional: false, reloadOnChange: false);
+                        if (useTestProfile)
+                        {
+                            builder.AddJsonFile("appsettings.Test.json", optional: false, reloadOnChange: false);
+                        }
                     })
                     .ConfigureServices((context, services) =>
                     {
