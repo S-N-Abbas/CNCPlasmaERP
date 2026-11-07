@@ -5,12 +5,12 @@
 The normal profile uses the `CNCPlasmaERP` LocalDB database. Do not clear it for testing. The test profile uses a separate database named `CNCPlasmaERP_Test`.
 
 1. Close any running ERP window.
-2. From the repository root, run `.\run-test.ps1` in PowerShell.
+2. From the repository root, run `.\run-test.cmd` in PowerShell or Command Prompt. The `.cmd` launcher works when PowerShell script execution is restricted.
 3. On first launch, the app applies migrations to `CNCPlasmaERP_Test` and opens the first-admin setup. Create a test admin; the existing database's users are not copied.
 4. Close and relaunch with the same script, then sign in to the test profile.
 5. Use names prefixed with `TEST` so test records are easy to identify.
 
-The script sets `CNCPLASMAERP_PROFILE=Test` only for the test process and restores the prior environment value when the app closes. Do not launch the regular app shortcut when you intend to test. If the profile or test connection cannot be confirmed, stop before entering data.
+The launcher sets `CNCPLASMAERP_PROFILE=Test` only for the test process and restores the prior environment value when the app closes. Do not launch the regular app shortcut when you intend to test. If the profile or test connection cannot be confirmed, stop before entering data.
 
 The test database is retained between launches. It is safe to remove **only** `CNCPlasmaERP_Test` through SQL Server Object Explorer / SSMS when you need a fresh run; verify the database name before dropping it. Never drop `CNCPlasmaERP`.
 
