@@ -79,10 +79,12 @@ namespace CNCPlasmaERP.Services
                 throw new DuplicateMaterialException(material.Name, material.Gauge);
             }
 
-            if (existing.IsActive && !material.IsActive && existing.CurrentStockKg > 0)
+            if (existing.IsActive && !material.IsActive &&
+                (existing.CurrentStockKg > 0 || existing.CurrentStockCount.GetValueOrDefault() > 0))
             {
                 throw new CannotDeactivateException(
-                    $"Cannot deactivate '{existing.Name}' while {existing.CurrentStockKg:N2} Kg is still in stock. " +
+                    $"Cannot deactivate '{existing.Name}' while {existing.CurrentStockKg:N2} Kg or " +
+                    $"{existing.CurrentStockCount.GetValueOrDefault()} sheets are still in stock. " +
                     "Use the stock first, or correct the quantity.");
             }
 

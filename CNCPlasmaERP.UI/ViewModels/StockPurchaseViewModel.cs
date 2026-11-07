@@ -12,7 +12,7 @@ using CommunityToolkit.Mvvm.Messaging;
 
 namespace CNCPlasmaERP.UI.ViewModels
 {
-    public partial class StockPurchaseViewModel : ViewModelBase, IRecipient<MaterialCreatedMessage>, IRecipient<SupplierCreatedMessage>
+    public partial class StockPurchaseViewModel : ViewModelBase, IRecipient<MaterialCreatedMessage>, IRecipient<MaterialUpdatedMessage>, IRecipient<SupplierCreatedMessage>
     {
         private readonly IStockService _stockService;
         private readonly IMaterialService _materialService;
@@ -171,6 +171,37 @@ namespace CNCPlasmaERP.UI.ViewModels
             if (Materials.All(m => m.Id != message.Value.Id))
             {
                 Materials.Add(message.Value);
+            }
+        }
+
+        public void Receive(MaterialUpdatedMessage message)
+        {
+            var existing = Materials.FirstOrDefault(m => m.Id == message.Value.Id);
+            if (!message.Value.IsActive)
+            {
+                if (SelectedMaterial?.Id == message.Value.Id)
+                {
+                    SelectedMaterial = null;
+                }
+                if (existing is not null)
+                {
+                    Materials.Remove(existing);
+                }
+                return;
+            }
+
+            if (existing is null)
+            {
+                Materials.Add(message.Value);
+            }
+            else
+            {
+                var index = Materials.IndexOf(existing);
+                Materials[index] = message.Value;
+                if (SelectedMaterial?.Id == message.Value.Id)
+                {
+                    SelectedMaterial = message.Value;
+                }
             }
         }
 

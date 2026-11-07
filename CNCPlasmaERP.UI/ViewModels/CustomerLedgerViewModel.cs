@@ -12,7 +12,7 @@ using Microsoft.Extensions.Logging;
 
 namespace CNCPlasmaERP.UI.ViewModels
 {
-    public partial class CustomerLedgerViewModel : ViewModelBase, IRecipient<CustomerCreatedMessage>
+    public partial class CustomerLedgerViewModel : ViewModelBase, IRecipient<CustomerCreatedMessage>, IRecipient<CustomerUpdatedMessage>
     {
         private readonly ICustomerService _customerService;
         private readonly ILedgerService _ledgerService;
@@ -78,6 +78,37 @@ namespace CNCPlasmaERP.UI.ViewModels
             if (Customers.All(c => c.Id != message.Value.Id))
             {
                 Customers.Add(message.Value);
+            }
+        }
+
+        public void Receive(CustomerUpdatedMessage message)
+        {
+            var existing = Customers.FirstOrDefault(c => c.Id == message.Value.Id);
+            if (!message.Value.IsActive)
+            {
+                if (SelectedCustomer?.Id == message.Value.Id)
+                {
+                    SelectedCustomer = null;
+                }
+                if (existing is not null)
+                {
+                    Customers.Remove(existing);
+                }
+                return;
+            }
+
+            if (existing is null)
+            {
+                Customers.Add(message.Value);
+            }
+            else
+            {
+                var index = Customers.IndexOf(existing);
+                Customers[index] = message.Value;
+                if (SelectedCustomer?.Id == message.Value.Id)
+                {
+                    SelectedCustomer = message.Value;
+                }
             }
         }
     }

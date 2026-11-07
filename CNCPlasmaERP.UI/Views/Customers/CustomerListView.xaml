@@ -63,6 +63,22 @@
                             </Style>
                         </DataGridTextColumn.ElementStyle>
                     </DataGridTextColumn>
+
+                    <DataGridCheckBoxColumn Header="Active"
+                                            Binding="{Binding IsActive}"
+                                            IsReadOnly="True"
+                                            Width="65" />
+
+                    <DataGridTemplateColumn Header="Action" Width="85">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Button Content="Edit"
+                                        Padding="10,4"
+                                        Command="{Binding DataContext.EditCustomerCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                        CommandParameter="{Binding}" />
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
                 </DataGrid.Columns>
             </DataGrid>
         </Border>
@@ -76,7 +92,7 @@
                 Padding="18">
             <ScrollViewer VerticalScrollBarVisibility="Auto">
                 <StackPanel>
-                    <TextBlock Text="Add Customer"
+                    <TextBlock Text="{Binding FormTitle}"
                                FontSize="16"
                                FontWeight="Bold"
                                Foreground="{DynamicResource MahApps.Brushes.Text}"
@@ -126,8 +142,9 @@
                              Style="{StaticResource MahApps.Styles.TextBox}" />
 
                     <TextBox Text="{Binding NewOpeningBalance, Converter={StaticResource DecimalTextConverter}, UpdateSourceTrigger=PropertyChanged}"
-                             mah:TextBoxHelper.Watermark="Opening Balance"
+                             mah:TextBoxHelper.Watermark="Opening Balance (new customer only)"
                              mah:TextBoxHelper.UseFloatingWatermark="True"
+                             IsReadOnly="{Binding IsEditing}"
                              FontSize="13"
                              Margin="0,0,0,12"
                              Style="{StaticResource MahApps.Styles.TextBox}" />
@@ -148,11 +165,21 @@
                                Visibility="{Binding ErrorMessage, Converter={StaticResource StringToVisibilityConverter}}" />
 
                     <!-- Action Button -->
-                    <Button Content="Add Customer"
+                    <CheckBox Content="Active"
+                              IsChecked="{Binding NewIsActive}"
+                              Visibility="{Binding IsEditing, Converter={StaticResource BooleanToVisibilityConverter}}"
+                              Margin="0,0,0,16" />
+
+                    <Button Content="{Binding FormButtonText}"
                             Style="{StaticResource PrimaryButton}"
-                            Command="{Binding AddCustomerCommand}"
+                            Command="{Binding SaveCustomerCommand}"
                             Height="36"
                             IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}" />
+
+                    <Button Content="Cancel"
+                            Margin="0,8,0,0"
+                            Command="{Binding CancelEditCommand}"
+                            Visibility="{Binding IsEditing, Converter={StaticResource BooleanToVisibilityConverter}}" />
                 </StackPanel>
             </ScrollViewer>
         </Border>

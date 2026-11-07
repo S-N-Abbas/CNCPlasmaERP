@@ -82,6 +82,22 @@
                             </Style>
                         </DataGridTextColumn.ElementStyle>
                     </DataGridTextColumn>
+
+                    <DataGridCheckBoxColumn Header="Active"
+                                            Binding="{Binding IsActive}"
+                                            IsReadOnly="True"
+                                            Width="65" />
+
+                    <DataGridTemplateColumn Header="Action" Width="85">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Button Content="Edit"
+                                        Padding="10,4"
+                                        Command="{Binding DataContext.EditMaterialCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                        CommandParameter="{Binding}" />
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
                 </DataGrid.Columns>
             </DataGrid>
         </Border>
@@ -95,7 +111,7 @@
                 Padding="20">
             <ScrollViewer VerticalScrollBarVisibility="Auto">
                 <StackPanel>
-                    <TextBlock Text="Add Material"
+                    <TextBlock Text="{Binding FormTitle}"
                                FontSize="16"
                                FontWeight="Bold"
                                Foreground="{DynamicResource MahApps.Brushes.Text}"
@@ -146,6 +162,11 @@
                              Margin="0,0,0,16"
                              Style="{StaticResource MahApps.Styles.TextBox}" />
 
+                    <CheckBox Content="Active"
+                              IsChecked="{Binding NewIsActive}"
+                              Visibility="{Binding IsEditing, Converter={StaticResource BooleanToVisibilityConverter}}"
+                              Margin="0,0,0,16" />
+
                     <!-- Error Display -->
                     <TextBlock Text="{Binding ErrorMessage}"
                                Foreground="#D92D20"
@@ -155,11 +176,16 @@
                                Visibility="{Binding ErrorMessage, Converter={StaticResource StringToVisibilityConverter}}" />
 
                     <!-- Action Button -->
-                    <Button Content="Add Material"
+                    <Button Content="{Binding FormButtonText}"
                             Style="{StaticResource PrimaryButton}"
                             Height="36"
-                            Command="{Binding AddMaterialCommand}"
+                            Command="{Binding SaveMaterialCommand}"
                             IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}" />
+
+                    <Button Content="Cancel"
+                            Margin="0,8,0,0"
+                            Command="{Binding CancelEditCommand}"
+                            Visibility="{Binding IsEditing, Converter={StaticResource BooleanToVisibilityConverter}}" />
                 </StackPanel>
             </ScrollViewer>
         </Border>

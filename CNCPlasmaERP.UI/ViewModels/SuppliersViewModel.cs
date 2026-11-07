@@ -105,6 +105,12 @@ namespace CNCPlasmaERP.UI.ViewModels
         }
 
         [RelayCommand]
+        private void EditSupplier(Supplier supplier)
+        {
+            SelectedSupplier = supplier;
+        }
+
+        [RelayCommand]
         private async Task SaveSupplierAsync()
         {
             await RunBusyAsync(async () =>

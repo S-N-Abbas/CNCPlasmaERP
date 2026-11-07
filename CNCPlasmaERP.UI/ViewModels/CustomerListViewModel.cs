@@ -116,6 +116,12 @@ namespace CNCPlasmaERP.UI.ViewModels
         }
 
         [RelayCommand]
+        private void EditCustomer(Customer customer)
+        {
+            SelectedCustomer = customer;
+        }
+
+        [RelayCommand]
         private async Task SaveCustomerAsync()
         {
             await RunBusyAsync(async () =>

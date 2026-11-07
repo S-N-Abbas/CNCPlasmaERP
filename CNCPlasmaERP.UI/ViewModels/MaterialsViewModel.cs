@@ -107,6 +107,12 @@ namespace CNCPlasmaERP.UI.ViewModels
         }
 
         [RelayCommand]
+        private void EditMaterial(Material material)
+        {
+            SelectedMaterial = material;
+        }
+
+        [RelayCommand]
         private async Task SaveMaterialAsync()
         {
             await RunBusyAsync(async () =>
