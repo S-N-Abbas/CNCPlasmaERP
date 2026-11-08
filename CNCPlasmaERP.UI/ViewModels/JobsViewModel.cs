@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Collections.Specialized;
+using System.ComponentModel;
 using CNCPlasmaERP.Core.Entities;
 using CNCPlasmaERP.Core.Enums;
 using CNCPlasmaERP.Core.Interfaces;
@@ -12,6 +13,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.Extensions.Logging;
+using System.Windows.Data;
 
 namespace CNCPlasmaERP.UI.ViewModels
 {
@@ -40,6 +42,8 @@ namespace CNCPlasmaERP.UI.ViewModels
             _materialService = materialService;
 
             SelectedJobUsages.CollectionChanged += OnSelectedJobUsagesChanged;
+            JobsView = CollectionViewSource.GetDefaultView(Jobs);
+            JobsView.Filter = MatchesJobFilter;
 
             WeakReferenceMessenger.Default.RegisterAll(this);
 
@@ -52,6 +56,7 @@ namespace CNCPlasmaERP.UI.ViewModels
         public ObservableCollection<Customer> Customers { get; } = new();
         public ObservableCollection<Material> Materials { get; } = new();
         public ObservableCollection<JobMaterialUsage> SelectedJobUsages { get; } = new();
+        public ICollectionView JobsView { get; }
 
         private void OnSelectedJobUsagesChanged(object? sender, NotifyCollectionChangedEventArgs e) =>
             OnPropertyChanged(nameof(CanCancelJob));
@@ -69,12 +74,57 @@ namespace CNCPlasmaERP.UI.ViewModels
         [ObservableProperty]
         private JobStatusFilterItem selectedStatusFilter;
 
-        partial void OnSelectedStatusFilterChanged(JobStatusFilterItem value) => _ = LoadJobsAsync();
+        partial void OnSelectedStatusFilterChanged(JobStatusFilterItem value) => RefreshJobView();
+
+        [ObservableProperty]
+        private string jobSearchText = string.Empty;
+
+        partial void OnJobSearchTextChanged(string value) => RefreshJobView();
+
+        private void RefreshJobView()
+        {
+            JobsView.Refresh();
+            if (SelectedJob is not null && !JobsView.Contains(SelectedJob))
+            {
+                SelectedJob = null;
+                SelectedJobDetail = null;
+            }
+        }
+
+        private bool MatchesJobFilter(object item)
+        {
+            if (item is not Job job)
+            {
+                return false;
+            }
+
+            if (SelectedStatusFilter?.Status is JobStatus status && job.Status != status)
+            {
+                return false;
+            }
+
+            if (string.IsNullOrWhiteSpace(JobSearchText))
+            {
+                return true;
+            }
+
+            var search = JobSearchText.Trim();
+            return job.JobNumber.Contains(search, System.StringComparison.OrdinalIgnoreCase) ||
+                   (job.Customer?.Name?.Contains(search, System.StringComparison.OrdinalIgnoreCase) ?? false) ||
+                   (job.Description?.Contains(search, System.StringComparison.OrdinalIgnoreCase) ?? false);
+        }
 
         [ObservableProperty]
         private Job? selectedJob;
 
         [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(ShowJobDetails))]
+        [NotifyPropertyChangedFor(nameof(ShowEmptyJobPanel))]
+        private bool isCreatingJob;
+
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(ShowJobDetails))]
+        [NotifyPropertyChangedFor(nameof(ShowEmptyJobPanel))]
         [NotifyPropertyChangedFor(nameof(CanMarkCompleted))]
         [NotifyPropertyChangedFor(nameof(CanCancelJob))]
         private Job? selectedJobDetail;
@@ -86,7 +136,18 @@ namespace CNCPlasmaERP.UI.ViewModels
         public bool CanCancelJob => SelectedJobDetail?.Status == JobStatus.Pending ||
             (SelectedJobDetail?.Status == JobStatus.InProgress && SelectedJobUsages.Count == 0);
 
-        partial void OnSelectedJobChanged(Job? value) => _ = RunBusyAsync(LoadJobDetailDataAsync);
+        public bool ShowJobDetails => !IsCreatingJob && SelectedJobDetail is not null;
+        public bool ShowEmptyJobPanel => !IsCreatingJob && SelectedJobDetail is null;
+
+        partial void OnSelectedJobChanged(Job? value)
+        {
+            if (value is not null)
+            {
+                IsCreatingJob = false;
+            }
+
+            _ = RunBusyAsync(LoadJobDetailDataAsync);
+        }
 
         // New Job form
         [ObservableProperty] private Customer? newJobCustomer;
@@ -127,12 +188,29 @@ namespace CNCPlasmaERP.UI.ViewModels
         [RelayCommand]
         private async Task LoadJobsAsync() => await RunBusyAsync(LoadJobsDataAsync);
 
+        [RelayCommand]
+        private void BeginCreateJob()
+        {
+            ErrorMessage = null;
+            StatusMessage = null;
+            IsCreatingJob = true;
+        }
+
+        [RelayCommand]
+        private void CancelCreateJob()
+        {
+            IsCreatingJob = false;
+            NewJobCustomer = null;
+            NewJobServiceCharges = 0;
+            NewJobCarriageCharges = 0;
+            NewJobDescription = null;
+            ErrorMessage = null;
+        }
+
         /// <summary>Raw helper (not RunBusyAsync-wrapped) — see StockPurchaseViewModel for why this split matters.</summary>
         private async Task LoadJobsDataAsync()
         {
-            var jobs = SelectedStatusFilter?.Status is null
-                ? await _jobService.GetAllJobsAsync()
-                : await _jobService.GetJobsByStatusAsync(SelectedStatusFilter.Status!.Value);
+            var jobs = await _jobService.GetAllJobsAsync();
 
             Jobs.Clear();
             foreach (var job in jobs)
@@ -185,6 +263,7 @@ namespace CNCPlasmaERP.UI.ViewModels
 
                 var created = await _jobService.CreateJobAsync(job);
                 StatusMessage = $"Job {created.JobNumber} created.";
+                IsCreatingJob = false;
 
                 NewJobCustomer = null;
                 NewJobServiceCharges = 0;

@@ -8,48 +8,25 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <!-- Subtitle Header -->
         <TextBlock Grid.Row="0"
-                   Text="Jobs ready to invoice (Completed status)"
+                   Text="Completed jobs ready to invoice"
                    FontSize="13"
                    FontWeight="SemiBold"
                    Foreground="{DynamicResource MahApps.Brushes.Gray2}"
                    Margin="0,0,0,12" />
 
-        <!-- Main Card Container -->
-        <Border Grid.Row="1"
-                Background="{DynamicResource MahApps.Brushes.ThemeBackground}"
-                CornerRadius="6"
-                BorderBrush="{DynamicResource MahApps.Brushes.Gray8}"
-                BorderThickness="1">
-            <DockPanel>
-                <!-- Bottom Action Bar -->
-                <Border DockPanel.Dock="Bottom"
-                        Padding="16,12"
-                        BorderBrush="{DynamicResource MahApps.Brushes.Gray8}"
-                        BorderThickness="0,1,0,0"
-                        Background="{DynamicResource MahApps.Brushes.Gray10}">
-                    <StackPanel Orientation="Horizontal"
-                                HorizontalAlignment="Right">
-                        <!-- Error Message Display -->
-                        <TextBlock Text="{Binding ErrorMessage}"
-                                   Foreground="#D92D20"
-                                   FontSize="12"
-                                   VerticalAlignment="Center"
-                                   Margin="0,0,16,0"
-                                   Visibility="{Binding ErrorMessage, Converter={StaticResource StringToVisibilityConverter}}" />
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="2*" />
+                <ColumnDefinition Width="16" />
+                <ColumnDefinition Width="320" />
+            </Grid.ColumnDefinitions>
 
-                        <!-- Primary Action Button -->
-                        <Button Content="Generate Invoice"
-                                Style="{StaticResource PrimaryButton}"
-                                Command="{Binding GenerateInvoiceCommand}"
-                                Height="36"
-                                Width="150"
-                                IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}" />
-                    </StackPanel>
-                </Border>
-
-                <!-- Completed Jobs DataGrid -->
+            <Border Grid.Column="0"
+                    Background="{DynamicResource MahApps.Brushes.ThemeBackground}"
+                    CornerRadius="6"
+                    BorderBrush="{DynamicResource MahApps.Brushes.Gray8}"
+                    BorderThickness="1">
                 <DataGrid ItemsSource="{Binding CompletedJobs}"
                           SelectedItem="{Binding SelectedJob}"
                           AutoGenerateColumns="False"
@@ -58,52 +35,75 @@
                           GridLinesVisibility="Horizontal"
                           BorderThickness="0"
                           RowHeight="38"
+                          SelectionMode="Single"
                           Style="{StaticResource MahApps.Styles.DataGrid}">
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="Job #"
-                                            Binding="{Binding JobNumber}"
-                                            Width="120" />
-
-                        <DataGridTextColumn Header="Customer"
-                                            Binding="{Binding Customer.Name}"
-                                            Width="*" />
-
-                        <DataGridTextColumn Header="Date"
-                                            Binding="{Binding JobDate, StringFormat=dd-MMM-yyyy}"
-                                            Width="120" />
-
-                        <DataGridTextColumn Header="Service"
-                                            Binding="{Binding ServiceCharges, StringFormat=N2}"
-                                            Width="110">
-                            <DataGridTextColumn.ElementStyle>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="HorizontalAlignment"
-                                            Value="Right" />
-                                    <Setter Property="Margin"
-                                            Value="0,0,12,0" />
-                                    <Setter Property="VerticalAlignment"
-                                            Value="Center" />
-                                </Style>
-                            </DataGridTextColumn.ElementStyle>
-                        </DataGridTextColumn>
-
-                        <DataGridTextColumn Header="Carriage"
-                                            Binding="{Binding CarriageCharges, StringFormat=N2}"
-                                            Width="110">
-                            <DataGridTextColumn.ElementStyle>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="HorizontalAlignment"
-                                            Value="Right" />
-                                    <Setter Property="Margin"
-                                            Value="0,0,12,0" />
-                                    <Setter Property="VerticalAlignment"
-                                            Value="Center" />
-                                </Style>
-                            </DataGridTextColumn.ElementStyle>
-                        </DataGridTextColumn>
+                        <DataGridTextColumn Header="Job #" Binding="{Binding JobNumber}" Width="120" />
+                        <DataGridTextColumn Header="Customer" Binding="{Binding Customer.Name}" Width="*" />
+                        <DataGridTextColumn Header="Date" Binding="{Binding JobDate, StringFormat=dd-MMM-yyyy}" Width="120" />
+                        <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="110" />
                     </DataGrid.Columns>
                 </DataGrid>
-            </DockPanel>
-        </Border>
+            </Border>
+
+            <Border Grid.Column="2"
+                    Background="{DynamicResource MahApps.Brushes.ThemeBackground}"
+                    CornerRadius="6"
+                    BorderBrush="{DynamicResource MahApps.Brushes.Gray8}"
+                    BorderThickness="1"
+                    Padding="18">
+                <Grid>
+                    <Grid Visibility="{Binding SelectedJob, Converter={StaticResource NullToVisibilityConverter}}">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <StackPanel>
+                            <TextBlock Text="Invoice Preview" FontSize="16" FontWeight="Bold"
+                                       Foreground="{DynamicResource MahApps.Brushes.Text}" Margin="0,0,0,16" />
+                            <TextBlock Text="Job number" FontSize="11" Foreground="{DynamicResource MahApps.Brushes.Gray3}" />
+                            <TextBlock Text="{Binding SelectedJob.JobNumber}" FontSize="14" FontWeight="SemiBold" Margin="0,2,0,12" />
+                            <TextBlock Text="Customer" FontSize="11" Foreground="{DynamicResource MahApps.Brushes.Gray3}" />
+                            <TextBlock Text="{Binding SelectedJob.Customer.Name}" FontSize="14" Margin="0,2,0,12" />
+                            <TextBlock Text="Completed on" FontSize="11" Foreground="{DynamicResource MahApps.Brushes.Gray3}" />
+                            <TextBlock Text="{Binding SelectedJob.JobDate, StringFormat=dd-MMM-yyyy}" FontSize="14" Margin="0,2,0,12" />
+                            <TextBlock Text="Description" FontSize="11" Foreground="{DynamicResource MahApps.Brushes.Gray3}" />
+                            <TextBlock Text="{Binding SelectedJob.Description}" FontSize="13" TextWrapping="Wrap" Margin="0,2,0,12" />
+                            <TextBlock Text="Charges" FontSize="11" Foreground="{DynamicResource MahApps.Brushes.Gray3}" />
+                            <Grid Margin="0,4,0,0">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="Service" Foreground="{DynamicResource MahApps.Brushes.Gray3}" />
+                                <TextBlock Grid.Column="1" Text="{Binding SelectedJob.ServiceCharges, StringFormat=N2}" />
+                                <TextBlock Grid.Row="1" Text="Carriage" Foreground="{DynamicResource MahApps.Brushes.Gray3}" />
+                                <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding SelectedJob.CarriageCharges, StringFormat=N2}" />
+                            </Grid>
+                        </StackPanel>
+                        <StackPanel Grid.Row="1">
+                            <TextBlock Text="{Binding ErrorMessage}" Foreground="#D92D20" FontSize="12"
+                                       TextWrapping="Wrap" Margin="0,0,0,10"
+                                       Visibility="{Binding ErrorMessage, Converter={StaticResource StringToVisibilityConverter}}" />
+                            <Button Content="Generate Invoice" Style="{StaticResource PrimaryButton}"
+                                    Command="{Binding GenerateInvoiceCommand}" Height="38"
+                                    IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}" />
+                        </StackPanel>
+                    </Grid>
+                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
+                                Visibility="{Binding SelectedJob, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
+                        <TextBlock Text="Select a completed job" FontSize="15" FontWeight="SemiBold"
+                                   Foreground="{DynamicResource MahApps.Brushes.Text}" HorizontalAlignment="Center" />
+                        <TextBlock Text="Review it here, then generate its invoice."
+                                   Foreground="{DynamicResource MahApps.Brushes.Gray3}" Margin="0,6,0,0"
+                                   HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </Grid>
     </Grid>
 </UserControl>

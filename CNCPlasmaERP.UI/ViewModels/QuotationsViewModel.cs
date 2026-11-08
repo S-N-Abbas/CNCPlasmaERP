@@ -1,7 +1,9 @@
 using System;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Windows.Data;
 using CNCPlasmaERP.Core.Entities;
 using CNCPlasmaERP.Core.Enums;
 using CNCPlasmaERP.Core.Interfaces;
@@ -33,6 +35,8 @@ namespace CNCPlasmaERP.UI.ViewModels
             _customerService = customerService;
             _materialService = materialService;
             _jobService = jobService;
+            QuotationsView = CollectionViewSource.GetDefaultView(Quotations);
+            QuotationsView.Filter = MatchesQuotationFilter;
 
             DraftItems.CollectionChanged += (_, _) => OnPropertyChanged(nameof(DraftTotal));
 
@@ -41,6 +45,7 @@ namespace CNCPlasmaERP.UI.ViewModels
         }
 
         public ObservableCollection<Quotation> Quotations { get; } = new();
+        public ICollectionView QuotationsView { get; }
         public ObservableCollection<Customer> Customers { get; } = new();
         public ObservableCollection<Material> Materials { get; } = new();
 
@@ -53,22 +58,79 @@ namespace CNCPlasmaERP.UI.ViewModels
         private Quotation? selectedQuotation;
 
         [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(ShowQuotationDetails))]
+        [NotifyPropertyChangedFor(nameof(ShowQuotationEmptyState))]
         [NotifyCanExecuteChangedFor(nameof(MarkAsSentCommand))]
         [NotifyCanExecuteChangedFor(nameof(ConvertToJobCommand))]
         private Quotation? selectedQuotationDetail;
 
-        /// <summary>0 = Details tab, 1 = New Quotation tab. Bound two-way to the TabControl.</summary>
         [ObservableProperty]
-        private int selectedTabIndex;
+        [NotifyPropertyChangedFor(nameof(ShowQuotationDetails))]
+        [NotifyPropertyChangedFor(nameof(ShowQuotationEmptyState))]
+        private bool isCreatingQuotation;
+
+        [ObservableProperty]
+        private string quotationSearchText = string.Empty;
+
+        public bool ShowQuotationDetails => !IsCreatingQuotation && SelectedQuotationDetail is not null;
+        public bool ShowQuotationEmptyState => !IsCreatingQuotation && SelectedQuotationDetail is null;
+
+        partial void OnQuotationSearchTextChanged(string value)
+        {
+            QuotationsView.Refresh();
+            if (SelectedQuotation is not null && !QuotationsView.Contains(SelectedQuotation))
+            {
+                SelectedQuotation = null;
+                SelectedQuotationDetail = null;
+            }
+        }
+
+        private bool MatchesQuotationFilter(object item)
+        {
+            if (item is not Quotation quotation || string.IsNullOrWhiteSpace(QuotationSearchText))
+            {
+                return item is Quotation;
+            }
+
+            var search = QuotationSearchText.Trim();
+            return quotation.QuotationNumber.Contains(search, System.StringComparison.OrdinalIgnoreCase) ||
+                   (quotation.Customer?.Name?.Contains(search, System.StringComparison.OrdinalIgnoreCase) ?? false);
+        }
 
         partial void OnSelectedQuotationChanged(Quotation? value)
         {
             if (value is not null)
             {
-                SelectedTabIndex = 0;
+                IsCreatingQuotation = false;
             }
 
             _ = RunBusyAsync(LoadDetailDataAsync);
+        }
+
+        [RelayCommand]
+        private void BeginCreateQuotation()
+        {
+            ErrorMessage = null;
+            StatusMessage = null;
+            IsCreatingQuotation = true;
+        }
+
+        [RelayCommand]
+        private void CancelCreateQuotation()
+        {
+            IsCreatingQuotation = false;
+            NewCustomer = null;
+            NewExpiryDate = null;
+            NewServiceCharges = 0;
+            NewCarriageCharges = 0;
+            NewNotes = null;
+            DraftItems.Clear();
+            ItemDescription = string.Empty;
+            ItemMaterial = null;
+            ItemWeightKg = 0;
+            ItemRatePerKg = 0;
+            ItemAmount = 0;
+            ErrorMessage = null;
         }
 
         // ----- New quotation form -----
@@ -277,7 +339,7 @@ namespace CNCPlasmaERP.UI.ViewModels
                 // here because this method's RunBusyAsync is still running.
                 await LoadListDataAsync(created.Id);
                 await LoadDetailDataAsync();
-                SelectedTabIndex = 0;
+                IsCreatingQuotation = false;
             });
         }
 

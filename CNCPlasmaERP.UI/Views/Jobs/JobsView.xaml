@@ -8,7 +8,7 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <!-- Filter + New Job Header Control Strip -->
+        <!-- Job list tools; creation is handled in the separate work panel. -->
         <Border Grid.Row="0"
                 Background="{DynamicResource MahApps.Brushes.ThemeBackground}"
                 CornerRadius="6"
@@ -16,79 +16,36 @@
                 BorderThickness="1"
                 Padding="16"
                 Margin="0,0,0,16">
-            <StackPanel Orientation="Horizontal">
-                <!-- Filter Status -->
-                <StackPanel Width="150"
-                            Margin="0,0,16,0"
-                            VerticalAlignment="Center">
-                    <ComboBox ItemsSource="{Binding StatusFilterOptions}"
-                              SelectedItem="{Binding SelectedStatusFilter}"
-                              DisplayMemberPath="Label"
-                              mah:TextBoxHelper.Watermark="Filter Status"
-                              mah:TextBoxHelper.UseFloatingWatermark="True"
-                              FontSize="13"
-                              Style="{StaticResource MahApps.Styles.ComboBox}" />
-                </StackPanel>
-
-                <!-- New Job Customer -->
-                <StackPanel Width="200"
-                            Margin="0,0,16,0"
-                            VerticalAlignment="Center">
-                    <ComboBox ItemsSource="{Binding Customers}"
-                              SelectedItem="{Binding NewJobCustomer}"
-                              IsEditable="True"
-                              IsTextSearchEnabled="True"
-                              TextSearch.TextPath="Name"
-                              StaysOpenOnEdit="True"
-                              DisplayMemberPath="Name"
-                              mah:TextBoxHelper.Watermark="Customer"
-                              mah:TextBoxHelper.UseFloatingWatermark="True"
-                              FontSize="13"
-                              Style="{StaticResource MahApps.Styles.ComboBox}" />
-                </StackPanel>
-
-                <!-- Service Charges Input -->
-                <StackPanel Width="120"
-                            Margin="0,0,16,0"
-                            VerticalAlignment="Center">
-                    <TextBox Text="{Binding NewJobServiceCharges, Converter={StaticResource DecimalTextConverter}, UpdateSourceTrigger=PropertyChanged}"
-                             mah:TextBoxHelper.Watermark="Service Charges"
-                             mah:TextBoxHelper.UseFloatingWatermark="True"
-                             FontSize="13"
-                             Style="{StaticResource MahApps.Styles.TextBox}" />
-                </StackPanel>
-
-                <!-- Carriage Charges Input -->
-                <StackPanel Width="120"
-                            Margin="0,0,16,0"
-                            VerticalAlignment="Center">
-                    <TextBox Text="{Binding NewJobCarriageCharges, Converter={StaticResource DecimalTextConverter}, UpdateSourceTrigger=PropertyChanged}"
-                             mah:TextBoxHelper.Watermark="Carriage Charges"
-                             mah:TextBoxHelper.UseFloatingWatermark="True"
-                             FontSize="13"
-                             Style="{StaticResource MahApps.Styles.TextBox}" />
-                </StackPanel>
-
-                <!-- Description Input -->
-                <StackPanel Width="200"
-                            Margin="0,0,16,0"
-                            VerticalAlignment="Center">
-                    <TextBox Text="{Binding NewJobDescription, UpdateSourceTrigger=PropertyChanged}"
-                             mah:TextBoxHelper.Watermark="Description (optional)"
-                             mah:TextBoxHelper.UseFloatingWatermark="True"
-                             FontSize="13"
-                             Style="{StaticResource MahApps.Styles.TextBox}" />
-                </StackPanel>
-
-                <!-- Action Button -->
-                <Button Content="Create Job"
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="180" />
+                    <ColumnDefinition Width="12" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <TextBox Grid.Column="0"
+                         Text="{Binding JobSearchText, UpdateSourceTrigger=PropertyChanged}"
+                         mah:TextBoxHelper.Watermark="Search job number, customer, or description"
+                         mah:TextBoxHelper.UseFloatingWatermark="True"
+                         mah:TextBoxHelper.ClearTextButton="True"
+                         Style="{StaticResource MahApps.Styles.TextBox}"
+                         Margin="0,0,12,0" />
+                <ComboBox Grid.Column="1"
+                          ItemsSource="{Binding StatusFilterOptions}"
+                          SelectedItem="{Binding SelectedStatusFilter}"
+                          DisplayMemberPath="Label"
+                          mah:TextBoxHelper.Watermark="Status"
+                          mah:TextBoxHelper.UseFloatingWatermark="True"
+                          Style="{StaticResource MahApps.Styles.ComboBox}"
+                          Margin="0" />
+                <Button Grid.Column="3"
+                        Content="New Job"
                         Style="{StaticResource PrimaryButton}"
-                        VerticalAlignment="Bottom"
                         Height="36"
-                        Width="100"
-                        Command="{Binding CreateJobCommand}"
+                        MinWidth="110"
+                        Command="{Binding BeginCreateJobCommand}"
                         IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}" />
-            </StackPanel>
+            </Grid>
         </Border>
 
         <!-- Main View Split (Job List + Job Detail) -->
@@ -105,7 +62,7 @@
                     BorderBrush="{DynamicResource MahApps.Brushes.Gray8}"
                     BorderThickness="1"
                     Margin="0,0,16,0">
-                <DataGrid ItemsSource="{Binding Jobs}"
+                <DataGrid ItemsSource="{Binding JobsView}"
                           SelectedItem="{Binding SelectedJob}"
                           AutoGenerateColumns="False"
                           IsReadOnly="True"
@@ -142,7 +99,8 @@
                     BorderBrush="{DynamicResource MahApps.Brushes.Gray8}"
                     BorderThickness="1"
                     Padding="18">
-                <Grid Visibility="{Binding SelectedJobDetail, Converter={StaticResource NullToVisibilityConverter}}">
+                <Grid>
+                    <Grid Visibility="{Binding ShowJobDetails, Converter={StaticResource BooleanToVisibilityConverter}}">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
@@ -399,6 +357,60 @@
                                    FontWeight="Bold"
                                    FontSize="13"
                                    Foreground="{DynamicResource MahApps.Brushes.Text}" />
+                    </StackPanel>
+                    </Grid>
+
+                    <ScrollViewer VerticalScrollBarVisibility="Auto"
+                                  Visibility="{Binding IsCreatingJob, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <StackPanel Margin="4">
+                            <TextBlock Text="New Job" FontSize="18" FontWeight="Bold"
+                                       Foreground="{DynamicResource MahApps.Brushes.Text}" Margin="0,0,0,16" />
+                            <ComboBox ItemsSource="{Binding Customers}"
+                                      SelectedItem="{Binding NewJobCustomer}"
+                                      IsEditable="True"
+                                      IsTextSearchEnabled="True"
+                                      TextSearch.TextPath="Name"
+                                      StaysOpenOnEdit="True"
+                                      DisplayMemberPath="Name"
+                                      mah:TextBoxHelper.Watermark="Customer"
+                                      mah:TextBoxHelper.UseFloatingWatermark="True"
+                                      Style="{StaticResource MahApps.Styles.ComboBox}" />
+                            <TextBox Text="{Binding NewJobServiceCharges, Converter={StaticResource DecimalTextConverter}, UpdateSourceTrigger=PropertyChanged}"
+                                     mah:TextBoxHelper.Watermark="Service Charges"
+                                     mah:TextBoxHelper.UseFloatingWatermark="True"
+                                     Style="{StaticResource MahApps.Styles.TextBox}" />
+                            <TextBox Text="{Binding NewJobCarriageCharges, Converter={StaticResource DecimalTextConverter}, UpdateSourceTrigger=PropertyChanged}"
+                                     mah:TextBoxHelper.Watermark="Carriage Charges"
+                                     mah:TextBoxHelper.UseFloatingWatermark="True"
+                                     Style="{StaticResource MahApps.Styles.TextBox}" />
+                            <TextBox Text="{Binding NewJobDescription, UpdateSourceTrigger=PropertyChanged}"
+                                     mah:TextBoxHelper.Watermark="Description (optional)"
+                                     mah:TextBoxHelper.UseFloatingWatermark="True"
+                                     Style="{StaticResource MahApps.Styles.TextBox}"
+                                     AcceptsReturn="True" Height="72" TextWrapping="Wrap" />
+                            <TextBlock Text="Add material usage after the job has been created."
+                                       FontSize="12" Foreground="{DynamicResource MahApps.Brushes.Gray3}"
+                                       TextWrapping="Wrap" Margin="0,0,0,16" />
+                            <TextBlock Text="{Binding ErrorMessage}" Foreground="#D92D20" FontSize="12"
+                                       TextWrapping="Wrap" Margin="0,0,0,12"
+                                       Visibility="{Binding ErrorMessage, Converter={StaticResource StringToVisibilityConverter}}" />
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                <Button Content="Cancel" Style="{StaticResource SecondaryButton}" Height="36"
+                                        Margin="0,0,8,0" Command="{Binding CancelCreateJobCommand}" />
+                                <Button Content="Create Job" Style="{StaticResource PrimaryButton}" Height="36"
+                                        MinWidth="110" Command="{Binding CreateJobCommand}"
+                                        IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}" />
+                            </StackPanel>
+                        </StackPanel>
+                    </ScrollViewer>
+
+                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
+                                Visibility="{Binding ShowEmptyJobPanel, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <TextBlock Text="Select a job to view its details" FontSize="16" FontWeight="SemiBold"
+                                   Foreground="{DynamicResource MahApps.Brushes.Text}" HorizontalAlignment="Center" />
+                        <TextBlock Text="Or choose New Job to create a record."
+                                   Foreground="{DynamicResource MahApps.Brushes.Gray3}" Margin="0,6,0,0"
+                                   HorizontalAlignment="Center" />
                     </StackPanel>
                 </Grid>
             </Border>

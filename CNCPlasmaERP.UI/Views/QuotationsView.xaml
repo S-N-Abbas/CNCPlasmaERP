@@ -1,7 +1,8 @@
 <UserControl x:Class="CNCPlasmaERP.UI.Views.QuotationsView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <Grid Margin="24">
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls">
+    <Grid Margin="16">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="430"/>
             <ColumnDefinition Width="*"/>
@@ -15,14 +16,27 @@
             </Grid.RowDefinitions>
 
             <Grid Grid.Row="0" Margin="0,0,0,8">
-                <TextBlock Text="Quotations" FontSize="15" FontWeight="SemiBold" Foreground="#101828" VerticalAlignment="Center"/>
-                <Button Content="Refresh" Style="{StaticResource SecondaryButton}" HorizontalAlignment="Right" Padding="12,6" FontSize="12"
-                        Command="{Binding LoadCommand}"
-                        IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}"/>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="12" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="8" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <TextBox Grid.Column="0" Text="{Binding QuotationSearchText, UpdateSourceTrigger=PropertyChanged}"
+                         mah:TextBoxHelper.Watermark="Search quotation number or customer"
+                         mah:TextBoxHelper.UseFloatingWatermark="True"
+                         mah:TextBoxHelper.ClearTextButton="True" />
+                <Button Grid.Column="2" Content="Refresh" Style="{StaticResource SecondaryButton}"
+                        Height="36" Command="{Binding LoadCommand}"
+                        IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}" />
+                <Button Grid.Column="4" Content="New Quotation" Style="{StaticResource PrimaryButton}"
+                        MinWidth="130" Height="36" Command="{Binding BeginCreateQuotationCommand}"
+                        IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}" />
             </Grid>
 
             <Border Grid.Row="1" Background="White" CornerRadius="8" BorderBrush="#E4E7EC" BorderThickness="1">
-                <DataGrid ItemsSource="{Binding Quotations}" SelectedItem="{Binding SelectedQuotation}"
+                <DataGrid ItemsSource="{Binding QuotationsView}" SelectedItem="{Binding SelectedQuotation}"
                           AutoGenerateColumns="False" IsReadOnly="True" SelectionMode="Single"
                           HeadersVisibility="Column" GridLinesVisibility="Horizontal" BorderThickness="0" RowHeight="36">
                     <DataGrid.Columns>
@@ -35,12 +49,11 @@
             </Border>
         </Grid>
 
-        <!-- Right side: Details tab + New Quotation tab -->
-        <TabControl Grid.Column="1" SelectedIndex="{Binding SelectedTabIndex, Mode=TwoWay}"
-                    Background="Transparent" BorderThickness="0">
+        <!-- Right work panel: selected quotation, create form, or empty guidance. -->
+        <Grid Grid.Column="1">
 
             <!-- ============ DETAILS ============ -->
-            <TabItem Header="Details">
+            <Grid Visibility="{Binding ShowQuotationDetails, Converter={StaticResource BooleanToVisibilityConverter}}">
                 <Border Background="White" CornerRadius="8" BorderBrush="#E4E7EC" BorderThickness="1" Padding="16" Margin="0,8,0,0">
                     <Grid Visibility="{Binding SelectedQuotationDetail, Converter={StaticResource NullToVisibilityConverter}}">
                         <Grid.RowDefinitions>
@@ -114,10 +127,10 @@
                         </StackPanel>
                     </Grid>
                 </Border>
-            </TabItem>
+            </Grid>
 
             <!-- ============ NEW QUOTATION ============ -->
-            <TabItem Header="New Quotation">
+            <Grid Visibility="{Binding IsCreatingQuotation, Converter={StaticResource BooleanToVisibilityConverter}}">
                 <Border Background="White" CornerRadius="8" BorderBrush="#E4E7EC" BorderThickness="1" Padding="16" Margin="0,8,0,0">
                     <ScrollViewer VerticalScrollBarVisibility="Auto">
                         <StackPanel>
@@ -237,13 +250,25 @@
                             <TextBlock Text="{Binding ErrorMessage}" Foreground="#D92D20" FontSize="12" TextWrapping="Wrap" Margin="0,0,0,10"
                                        Visibility="{Binding ErrorMessage, Converter={StaticResource StringToVisibilityConverter}}"/>
 
-                            <Button Content="Create Quotation" Style="{StaticResource PrimaryButton}"
-                                    Command="{Binding CreateQuotationCommand}"
-                                    IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}"/>
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                        <Button Content="Cancel" Style="{StaticResource SecondaryButton}"
+                                                Margin="0,0,8,0" Command="{Binding CancelCreateQuotationCommand}" />
+                                        <Button Content="Create Quotation" Style="{StaticResource PrimaryButton}"
+                                                Command="{Binding CreateQuotationCommand}"
+                                                IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}" />
+                                    </StackPanel>
                         </StackPanel>
                     </ScrollViewer>
                 </Border>
-            </TabItem>
-        </TabControl>
+            </Grid>
+
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
+                        Visibility="{Binding ShowQuotationEmptyState, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <TextBlock Text="Select a quotation to view its details" FontSize="16" FontWeight="SemiBold"
+                           Foreground="#101828" HorizontalAlignment="Center" />
+                <TextBlock Text="Or choose New Quotation to create one." Foreground="#667085"
+                           Margin="0,6,0,0" HorizontalAlignment="Center" />
+            </StackPanel>
+        </Grid>
     </Grid>
 </UserControl>
