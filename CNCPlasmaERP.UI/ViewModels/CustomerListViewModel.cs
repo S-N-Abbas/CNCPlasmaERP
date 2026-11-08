@@ -182,6 +182,8 @@ namespace CNCPlasmaERP.UI.ViewModels
                         WeakReferenceMessenger.Default.Send(new CustomerCreatedMessage(fresh));
                     }
                 }
+
+                StatusMessage = editingId.HasValue ? "Customer changes saved." : "Customer added.";
             });
         }
 

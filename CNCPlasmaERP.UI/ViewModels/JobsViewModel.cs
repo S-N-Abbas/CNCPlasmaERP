@@ -184,6 +184,7 @@ namespace CNCPlasmaERP.UI.ViewModels
                 };
 
                 var created = await _jobService.CreateJobAsync(job);
+                StatusMessage = $"Job {created.JobNumber} created.";
 
                 NewJobCustomer = null;
                 NewJobServiceCharges = 0;
@@ -231,6 +232,7 @@ namespace CNCPlasmaERP.UI.ViewModels
                     UsageSellingRatePerKg,
                     UsageScrapGeneratedKg,
                     UsageNotes);
+                StatusMessage = "Material usage added to the job.";
 
                 UsageMaterial = null;
                 UsageWeightKg = 0;
@@ -250,6 +252,7 @@ namespace CNCPlasmaERP.UI.ViewModels
             await RunBusyAsync(async () =>
             {
                 await _jobService.RemoveMaterialUsageAsync(usage.Id);
+                StatusMessage = "Material usage removed.";
                 await LoadJobDetailDataAsync();
             });
         }
@@ -265,6 +268,7 @@ namespace CNCPlasmaERP.UI.ViewModels
                 }
 
                 await _jobService.UpdateJobStatusAsync(SelectedJob.Id, JobStatus.Completed);
+                StatusMessage = $"Job {SelectedJob.JobNumber} marked complete.";
                 await LoadJobsDataAsync();
                 await LoadJobDetailDataAsync();
             });
@@ -281,6 +285,7 @@ namespace CNCPlasmaERP.UI.ViewModels
                 }
 
                 await _jobService.UpdateJobStatusAsync(SelectedJob.Id, JobStatus.Cancelled);
+                StatusMessage = $"Job {SelectedJob.JobNumber} cancelled.";
                 await LoadJobsDataAsync();
                 await LoadJobDetailDataAsync();
             });

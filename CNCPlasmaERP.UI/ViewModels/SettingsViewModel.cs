@@ -22,9 +22,6 @@ namespace CNCPlasmaERP.UI.ViewModels
         [ObservableProperty]
         private AppSettings? settings;
 
-        [ObservableProperty]
-        private string? statusMessage;
-
         [RelayCommand]
         private async Task LoadAsync()
         {

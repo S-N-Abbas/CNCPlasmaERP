@@ -43,22 +43,25 @@ namespace CNCPlasmaERP.UI.ViewModels
             ConfigureDatabaseReset(unitOfWorkForReset.DetachAllTrackedEntities);
 
             var allItems = new[]
-{
-    new NavigationItem { Title = "Dashboard", Icon = "\uE80F", RequiredPermission = null, ViewModelType = typeof(DashboardViewModel) },
-    new NavigationItem { Title = "Stock",     Icon = "\uE7B8", RequiredPermission = Permission.ManageStock, ViewModelType = typeof(StockViewModel) },
-    new NavigationItem { Title = "Customers", Icon = "\uE716", RequiredPermission = Permission.ManageCustomers, ViewModelType = typeof(CustomersViewModel) },
-    new NavigationItem { Title = "Suppliers", Icon = "\uE806", RequiredPermission = Permission.ManageSuppliers, ViewModelType = typeof(SuppliersViewModel) },
-    new NavigationItem { Title = "Jobs",      Icon = "\uE90F", RequiredPermission = Permission.ManageJobs, ViewModelType = typeof(JobsViewModel) },
-    new NavigationItem { Title = "Invoicing", Icon = "\uE8A5", RequiredPermission = Permission.ManageInvoicesPayments, ViewModelType = typeof(InvoicingViewModel) },
-    new NavigationItem { Title = "Expenses",  Icon = "\uE8C7", RequiredPermission = Permission.ManageExpenses, ViewModelType = typeof(ExpensesViewModel) },
-    new NavigationItem { Title = "Settings",  Icon = "\uE713", RequiredPermission = Permission.ManageSettings, ViewModelType = typeof(SettingsViewModel) },
-    new NavigationItem { Title = "Users",     Icon = "\uE77B", RequiredPermission = Permission.ManageUsers, ViewModelType = typeof(UsersViewModel) },
-    new NavigationItem { Title = "Reports",   Icon = "\uE9F9", RequiredPermission = Permission.ViewFinancialReports, ViewModelType = typeof(ReportsViewModel) },
-    new NavigationItem { Title = "Quotations", Icon = "\uE70F", RequiredPermission = Permission.ManageJobs, ViewModelType = typeof(QuotationsViewModel) },
-};
+            {
+                new NavigationItem { Section = "Overview", Title = "Dashboard", Icon = "\uE80F", RequiredPermission = null, ViewModelType = typeof(DashboardViewModel) },
+                new NavigationItem { Section = "Work", Title = "Jobs", Icon = "\uE90F", RequiredPermission = Permission.ManageJobs, ViewModelType = typeof(JobsViewModel) },
+                new NavigationItem { Section = "Work", Title = "Quotations", Icon = "\uE70F", RequiredPermission = Permission.ManageJobs, ViewModelType = typeof(QuotationsViewModel) },
+                new NavigationItem { Section = "Sales", Title = "Invoicing", Icon = "\uE8A5", RequiredPermission = Permission.ManageInvoicesPayments, ViewModelType = typeof(InvoicingViewModel) },
+                new NavigationItem { Section = "Sales", Title = "Customers", Icon = "\uE716", RequiredPermission = Permission.ManageCustomers, ViewModelType = typeof(CustomersViewModel) },
+                new NavigationItem { Section = "Purchasing & Stock", Title = "Stock", Icon = "\uE7B8", RequiredPermission = Permission.ManageStock, ViewModelType = typeof(StockViewModel) },
+                new NavigationItem { Section = "Purchasing & Stock", Title = "Suppliers", Icon = "\uE806", RequiredPermission = Permission.ManageSuppliers, ViewModelType = typeof(SuppliersViewModel) },
+                new NavigationItem { Section = "Finance", Title = "Expenses", Icon = "\uE8C7", RequiredPermission = Permission.ManageExpenses, ViewModelType = typeof(ExpensesViewModel) },
+                new NavigationItem { Section = "Finance", Title = "Reports", Icon = "\uE9F9", RequiredPermission = Permission.ViewFinancialReports, ViewModelType = typeof(ReportsViewModel) },
+                new NavigationItem { Section = "Administration", Title = "Users", Icon = "\uE77B", RequiredPermission = Permission.ManageUsers, ViewModelType = typeof(UsersViewModel) },
+                new NavigationItem { Section = "Administration", Title = "Settings", Icon = "\uE713", RequiredPermission = Permission.ManageSettings, ViewModelType = typeof(SettingsViewModel) },
+            };
 
-            NavigationItems = new ObservableCollection<NavigationItem>(
-                allItems.Where(i => i.RequiredPermission is null || _currentUserContext.HasPermission(i.RequiredPermission.Value)));
+            var visibleItems = allItems.Where(i => i.RequiredPermission is null || _currentUserContext.HasPermission(i.RequiredPermission.Value)).ToList();
+            NavigationItems = new ObservableCollection<NavigationItem>(visibleItems);
+            NavigationSections = new ObservableCollection<NavigationSection>(visibleItems
+                .GroupBy(i => i.Section)
+                .Select(g => new NavigationSection { Title = g.Key, Items = new ObservableCollection<NavigationItem>(g) }));
 
             LoggedInUserDisplay = $"{currentUserContext.CurrentUser?.FullName} ({currentUserContext.CurrentUser?.Role})";
 
@@ -69,6 +72,8 @@ namespace CNCPlasmaERP.UI.ViewModels
         }
 
         public ObservableCollection<NavigationItem> NavigationItems { get; }
+
+        public ObservableCollection<NavigationSection> NavigationSections { get; }
 
         public string LoggedInUserDisplay { get; }
 

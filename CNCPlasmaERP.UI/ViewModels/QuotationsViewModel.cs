@@ -61,9 +61,6 @@ namespace CNCPlasmaERP.UI.ViewModels
         [ObservableProperty]
         private int selectedTabIndex;
 
-        [ObservableProperty]
-        private string? statusMessage;
-
         partial void OnSelectedQuotationChanged(Quotation? value)
         {
             if (value is not null)

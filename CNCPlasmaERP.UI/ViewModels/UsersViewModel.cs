@@ -47,9 +47,6 @@ namespace CNCPlasmaERP.UI.ViewModels
         [ObservableProperty]
         private string resetPassword = string.Empty;
 
-        [ObservableProperty]
-        private string? statusMessage;
-
         [RelayCommand]
         private async Task LoadAsync() => await RunBusyAsync(LoadDataAsync);
 

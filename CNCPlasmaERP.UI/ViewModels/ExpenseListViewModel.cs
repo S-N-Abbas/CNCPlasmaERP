@@ -93,6 +93,7 @@ namespace CNCPlasmaERP.UI.ViewModels
 
                 await _expenseService.CreateAsync(expense);
                 Expenses.Insert(0, expense);
+                StatusMessage = "Expense recorded.";
 
                 NewAmount = 0;
                 NewPaidTo = null;

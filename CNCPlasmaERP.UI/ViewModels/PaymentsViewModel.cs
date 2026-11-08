@@ -166,6 +166,7 @@ namespace CNCPlasmaERP.UI.ViewModels
                 };
 
                 await _ledgerService.PostPaymentAsync(payment);
+                StatusMessage = $"Payment of {Amount:N2} recorded.";
 
                 Amount = 0;
                 ReferenceNumber = null;

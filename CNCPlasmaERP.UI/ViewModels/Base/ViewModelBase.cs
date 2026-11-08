@@ -60,6 +60,9 @@ namespace CNCPlasmaERP.UI.ViewModels.Base
         [ObservableProperty]
         private string? errorMessage;
 
+        [ObservableProperty]
+        private string? statusMessage;
+
         /// <summary>
         /// Runs an async operation with busy-state tracking and centralized error
         /// handling. Re-entrant calls on THIS ViewModel while already busy are
@@ -78,6 +81,7 @@ namespace CNCPlasmaERP.UI.ViewModels.Base
 
             IsBusy = true;
             ErrorMessage = null;
+            StatusMessage = null;
 
             await DatabaseGate.WaitAsync();
             try

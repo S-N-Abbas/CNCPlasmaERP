@@ -182,12 +182,6 @@
                            Margin="0,12,0,0"
                            Visibility="{Binding ErrorMessage, Converter={StaticResource StringToVisibilityConverter}}" />
 
-                <TextBlock Text="{Binding StatusMessage}"
-                           Foreground="#067647"
-                           FontSize="12"
-                           TextWrapping="Wrap"
-                           Margin="0,12,0,0"
-                           Visibility="{Binding StatusMessage, Converter={StaticResource StringToVisibilityConverter}}" />
             </StackPanel>
         </ScrollViewer>
     </Grid>

@@ -53,9 +53,6 @@ namespace CNCPlasmaERP.UI.ViewModels
         [ObservableProperty]
         private string? notes;
 
-        [ObservableProperty]
-        private string? statusMessage;
-
         /// <summary>Live "weight x rate" shown under the form so the amount is visible before saving.</summary>
         public decimal TotalPreview => WeightKg * RatePerKg;
 

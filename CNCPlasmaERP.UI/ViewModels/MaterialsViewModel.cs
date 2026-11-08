@@ -173,6 +173,8 @@ namespace CNCPlasmaERP.UI.ViewModels
                         WeakReferenceMessenger.Default.Send(new MaterialCreatedMessage(fresh));
                     }
                 }
+
+                StatusMessage = editingId.HasValue ? "Material changes saved." : "Material added.";
             });
         }
     }

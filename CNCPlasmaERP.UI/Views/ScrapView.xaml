@@ -95,8 +95,6 @@
 
                     <TextBlock Text="{Binding ErrorMessage}" Foreground="#D92D20" FontSize="12" TextWrapping="Wrap" Margin="0,0,0,10"
                                Visibility="{Binding ErrorMessage, Converter={StaticResource StringToVisibilityConverter}}"/>
-                    <TextBlock Text="{Binding StatusMessage}" Foreground="#067647" FontSize="12" TextWrapping="Wrap" Margin="0,0,0,10"
-                               Visibility="{Binding StatusMessage, Converter={StaticResource StringToVisibilityConverter}}"/>
 
                     <Button Content="Record Scrap Sale" Style="{StaticResource PrimaryButton}"
                             Command="{Binding RecordSaleCommand}"

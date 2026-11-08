@@ -1,4 +1,5 @@
 using System;
+using System.Collections.ObjectModel;
 using CNCPlasmaERP.Core.Authorization;
 using CommunityToolkit.Mvvm.ComponentModel;
 
@@ -13,6 +14,8 @@ namespace CNCPlasmaERP.UI.Navigation
     {
         public string Title { get; init; } = string.Empty;
 
+        public string Section { get; init; } = string.Empty;
+
         /// <summary>Simple text glyph for now — swap for a proper icon set later if desired.</summary>
         public string Icon { get; init; } = string.Empty;
 
@@ -22,5 +25,11 @@ namespace CNCPlasmaERP.UI.Navigation
 
         [ObservableProperty]
         private bool isSelected;
+    }
+
+    public sealed class NavigationSection
+    {
+        public string Title { get; init; } = string.Empty;
+        public ObservableCollection<NavigationItem> Items { get; init; } = new();
     }
 }

@@ -130,6 +130,7 @@ namespace CNCPlasmaERP.UI.ViewModels
                 WeakReferenceMessenger.Default.Send(new SupplierCreatedMessage(supplier));
                 SelectedSupplier = supplier;
                 NewSupplierName = string.Empty;
+                StatusMessage = "Supplier added.";
             });
         }
 
@@ -163,6 +164,7 @@ namespace CNCPlasmaERP.UI.ViewModels
                 };
 
                 await _stockService.RecordPurchaseAsync(purchase);
+                StatusMessage = "Stock purchase recorded.";
 
                 WeightKg = 0;
                 SheetCount = null;

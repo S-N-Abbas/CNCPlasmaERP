@@ -65,7 +65,9 @@ namespace CNCPlasmaERP.UI.ViewModels
                     return;
                 }
 
-                await _invoiceService.CreateInvoiceFromJobAsync(SelectedJob.Id, _currentUserContext.CurrentUser?.Id);
+                var jobNumber = SelectedJob.JobNumber;
+                var invoice = await _invoiceService.CreateInvoiceFromJobAsync(SelectedJob.Id, _currentUserContext.CurrentUser?.Id);
+                StatusMessage = $"Invoice {invoice.InvoiceNumber} created for job {jobNumber}.";
 
                 SelectedJob = null;
 

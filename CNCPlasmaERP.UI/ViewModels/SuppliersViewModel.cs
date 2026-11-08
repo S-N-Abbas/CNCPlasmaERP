@@ -159,6 +159,8 @@ namespace CNCPlasmaERP.UI.ViewModels
                         WeakReferenceMessenger.Default.Send(new SupplierCreatedMessage(fresh));
                     }
                 }
+
+                StatusMessage = editingId.HasValue ? "Supplier changes saved." : "Supplier added.";
             });
         }
 

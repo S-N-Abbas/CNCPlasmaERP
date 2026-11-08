@@ -79,6 +79,7 @@ namespace CNCPlasmaERP.UI.ViewModels
 
                 await _expenseService.CreateAsync(expense);
                 WagePayments.Insert(0, expense);
+                StatusMessage = "Wage payment recorded.";
 
                 WorkerName = string.Empty;
                 Amount = 0;
