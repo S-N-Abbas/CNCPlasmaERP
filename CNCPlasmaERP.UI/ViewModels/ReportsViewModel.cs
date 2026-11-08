@@ -1,3 +1,4 @@
+using CommunityToolkit.Mvvm.ComponentModel;
 using CNCPlasmaERP.UI.ViewModels.Base;
 using CNCPlasmaERP.Core.Authorization;
 using CNCPlasmaERP.Core.Interfaces;
@@ -19,5 +20,20 @@ namespace CNCPlasmaERP.UI.ViewModels
         public ProfitLossReportViewModel ProfitLoss { get; }
         public StockReportViewModel StockReport { get; }
         public bool CanViewStockReport { get; }
+
+        [ObservableProperty]
+        private int selectedTabIndex;
+
+        partial void OnSelectedTabIndexChanged(int value)
+        {
+            if (value == 0)
+            {
+                ProfitLoss.LoadCommand.Execute(null);
+            }
+            else if (value == 1 && CanViewStockReport)
+            {
+                StockReport.LoadCommand.Execute(null);
+            }
+        }
     }
 }

@@ -92,12 +92,17 @@ namespace CNCPlasmaERP.UI.ViewModels
         /// <summary>Raw helper (not RunBusyAsync-wrapped) so SaveMaterialAsync can reuse it after its own RunBusyAsync has started.</summary>
         private async Task LoadDataAsync()
         {
+            var selectedMaterialId = SelectedMaterial?.Id;
             var materials = await _materialService.GetAllAsync();
             Materials.Clear();
             foreach (var material in materials)
             {
                 Materials.Add(material);
             }
+
+            SelectedMaterial = selectedMaterialId.HasValue
+                ? Materials.FirstOrDefault(m => m.Id == selectedMaterialId.Value)
+                : null;
         }
 
         [RelayCommand]

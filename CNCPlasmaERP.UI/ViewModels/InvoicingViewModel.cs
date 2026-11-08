@@ -1,3 +1,4 @@
+using CommunityToolkit.Mvvm.ComponentModel;
 using CNCPlasmaERP.UI.ViewModels.Base;
 using Microsoft.Extensions.Logging;
 
@@ -21,5 +22,24 @@ namespace CNCPlasmaERP.UI.ViewModels
         public GenerateInvoiceViewModel GenerateInvoice { get; }
         public InvoiceListViewModel InvoiceList { get; }
         public PaymentsViewModel Payments { get; }
+
+        [ObservableProperty]
+        private int selectedTabIndex;
+
+        partial void OnSelectedTabIndexChanged(int value)
+        {
+            switch (value)
+            {
+                case 0:
+                    GenerateInvoice.LoadCommand.Execute(null);
+                    break;
+                case 1:
+                    InvoiceList.LoadCommand.Execute(null);
+                    break;
+                case 2:
+                    Payments.LoadCommand.Execute(null);
+                    break;
+            }
+        }
     }
 }

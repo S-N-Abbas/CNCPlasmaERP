@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Threading.Tasks;
 using CNCPlasmaERP.Core.Entities;
 using CNCPlasmaERP.Core.Enums;
@@ -40,12 +41,17 @@ namespace CNCPlasmaERP.UI.ViewModels
 
         private async Task LoadDataAsync()
         {
+            var selectedJobId = SelectedJob?.Id;
             var jobs = await _jobService.GetJobsByStatusAsync(JobStatus.Completed);
             CompletedJobs.Clear();
             foreach (var job in jobs)
             {
                 CompletedJobs.Add(job);
             }
+
+            SelectedJob = selectedJobId.HasValue
+                ? CompletedJobs.FirstOrDefault(j => j.Id == selectedJobId.Value)
+                : null;
         }
 
         [RelayCommand]

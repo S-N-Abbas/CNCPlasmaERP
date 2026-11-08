@@ -41,20 +41,30 @@ namespace CNCPlasmaERP.UI.ViewModels
         }
 
         [RelayCommand]
-        private async Task LoadCustomersAsync()
+        private async Task LoadCustomersAsync() => await RunBusyAsync(LoadCustomersDataAsync);
+
+        private async Task LoadCustomersDataAsync()
         {
-            await RunBusyAsync(async () =>
+            var selectedCustomerId = SelectedCustomer?.Id;
+            var customers = await _customerService.GetActiveAsync();
+            Customers.Clear();
+            foreach (var customer in customers)
             {
-                var customers = await _customerService.GetActiveAsync();
-                Customers.Clear();
-                foreach (var customer in customers)
-                {
-                    Customers.Add(customer);
-                }
-            });
+                Customers.Add(customer);
+            }
+
+            SelectedCustomer = selectedCustomerId.HasValue
+                ? Customers.FirstOrDefault(c => c.Id == selectedCustomerId.Value)
+                : null;
+            await LoadLedgerDataAsync();
         }
 
         private async Task LoadLedgerAsync()
+        {
+            await RunBusyAsync(LoadLedgerDataAsync);
+        }
+
+        private async Task LoadLedgerDataAsync()
         {
             if (SelectedCustomer is null)
             {
@@ -62,15 +72,12 @@ namespace CNCPlasmaERP.UI.ViewModels
                 return;
             }
 
-            await RunBusyAsync(async () =>
+            var entries = await _ledgerService.GetStatementAsync(SelectedCustomer.Id);
+            LedgerEntries.Clear();
+            foreach (var entry in entries)
             {
-                var entries = await _ledgerService.GetStatementAsync(SelectedCustomer.Id);
-                LedgerEntries.Clear();
-                foreach (var entry in entries)
-                {
-                    LedgerEntries.Add(entry);
-                }
-            });
+                LedgerEntries.Add(entry);
+            }
         }
 
         public void Receive(CustomerCreatedMessage message)

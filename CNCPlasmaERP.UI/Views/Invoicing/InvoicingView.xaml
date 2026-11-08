@@ -5,6 +5,7 @@
              xmlns:views="clr-namespace:CNCPlasmaERP.UI.Views">
 
     <TabControl Margin="0"
+                SelectedIndex="{Binding SelectedTabIndex, Mode=TwoWay}"
                 Background="Transparent"
                 BorderThickness="0"
                 Style="{StaticResource MahApps.Styles.TabControl}"

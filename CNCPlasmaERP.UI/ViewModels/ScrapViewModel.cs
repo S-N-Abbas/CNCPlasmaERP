@@ -65,6 +65,7 @@ namespace CNCPlasmaERP.UI.ViewModels
         /// <summary>Raw helper (not RunBusyAsync-wrapped) so RecordSaleAsync can reuse it after its own RunBusyAsync has started.</summary>
         private async Task LoadDataAsync()
         {
+            var selectedMaterialId = SelectedScrap?.MaterialId;
             var balances = await _scrapService.GetBalancesAsync();
             Balances.Clear();
             SellableBalances.Clear();
@@ -83,6 +84,10 @@ namespace CNCPlasmaERP.UI.ViewModels
             {
                 RecentSales.Add(sale);
             }
+
+            SelectedScrap = selectedMaterialId.HasValue
+                ? SellableBalances.FirstOrDefault(s => s.MaterialId == selectedMaterialId.Value)
+                : null;
         }
 
         [RelayCommand]

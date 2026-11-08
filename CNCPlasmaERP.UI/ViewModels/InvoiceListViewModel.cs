@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Threading.Tasks;
 using CNCPlasmaERP.Core.Entities;
 using CNCPlasmaERP.Core.Interfaces;
@@ -44,12 +45,21 @@ namespace CNCPlasmaERP.UI.ViewModels
 
         private async Task LoadListDataAsync()
         {
+            var selectedInvoiceId = SelectedInvoice?.Id;
             var invoices = await _invoiceService.GetAllInvoicesAsync();
             Invoices.Clear();
             foreach (var invoice in invoices)
             {
                 Invoices.Add(invoice);
             }
+
+            // Clearing the collection can make the DataGrid drop its selection.
+            // Re-select the refreshed entity and reload its details so the list,
+            // status, balance, and print preview all reflect the same snapshot.
+            SelectedInvoice = selectedInvoiceId.HasValue
+                ? Invoices.FirstOrDefault(i => i.Id == selectedInvoiceId.Value)
+                : null;
+            await LoadDetailDataAsync();
         }
 
         private async Task LoadDetailDataAsync()

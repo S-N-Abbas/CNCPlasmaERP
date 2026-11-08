@@ -35,7 +35,7 @@ namespace CNCPlasmaERP.UI.ViewModels
             _currentUserContext = currentUserContext;
 
             WeakReferenceMessenger.Default.RegisterAll(this);
-            _ = InitializeAsync();
+            _ = LoadAsync();
         }
 
         public ObservableCollection<Customer> Customers { get; } = new();
@@ -65,24 +65,41 @@ namespace CNCPlasmaERP.UI.ViewModels
         [ObservableProperty]
         private string? notes;
 
-        partial void OnSelectedCustomerChanged(Customer? value) => _ = RunBusyAsync(LoadOutstandingInvoicesAsync);
+        partial void OnSelectedCustomerChanged(Customer? value) => _ = RunBusyAsync(() => LoadOutstandingInvoicesAsync());
 
-        private async Task InitializeAsync()
+        [RelayCommand]
+        private async Task LoadAsync() => await RunBusyAsync(LoadDataAsync);
+
+        private async Task LoadDataAsync()
         {
-            await RunBusyAsync(async () =>
-            {
-                var customers = await _customerService.GetActiveAsync();
-                Customers.Clear();
-                foreach (var customer in customers)
-                {
-                    Customers.Add(customer);
-                }
+            var selectedCustomerId = SelectedCustomer?.Id;
+            var selectedInvoiceId = SelectedInvoice?.Id;
 
-                await LoadRecentPaymentsAsync();
-            });
+            var customers = await _customerService.GetActiveAsync();
+            Customers.Clear();
+            foreach (var customer in customers)
+            {
+                Customers.Add(customer);
+            }
+
+            SelectedCustomer = selectedCustomerId.HasValue
+                ? Customers.FirstOrDefault(c => c.Id == selectedCustomerId.Value)
+                : null;
+
+            if (SelectedCustomer is null)
+            {
+                OutstandingInvoices.Clear();
+                SelectedInvoice = null;
+            }
+            else
+            {
+                await LoadOutstandingInvoicesAsync(selectedInvoiceId);
+            }
+
+            await LoadRecentPaymentsAsync();
         }
 
-        private async Task LoadOutstandingInvoicesAsync()
+        private async Task LoadOutstandingInvoicesAsync(int? selectedInvoiceId = null)
         {
             OutstandingInvoices.Clear();
             SelectedInvoice = null;
@@ -97,6 +114,10 @@ namespace CNCPlasmaERP.UI.ViewModels
             {
                 OutstandingInvoices.Add(invoice);
             }
+
+            SelectedInvoice = selectedInvoiceId.HasValue
+                ? OutstandingInvoices.FirstOrDefault(i => i.Id == selectedInvoiceId.Value)
+                : null;
         }
 
         private async Task LoadRecentPaymentsAsync()

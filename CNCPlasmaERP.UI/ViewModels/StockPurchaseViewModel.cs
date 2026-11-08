@@ -77,6 +77,9 @@ namespace CNCPlasmaERP.UI.ViewModels
         /// </summary>
         private async Task LoadDataAsync()
         {
+            var selectedMaterialId = SelectedMaterial?.Id;
+            var selectedSupplierId = SelectedSupplier?.Id;
+
             var materials = await _materialService.GetActiveAsync();
             Materials.Clear();
             foreach (var material in materials)
@@ -90,6 +93,13 @@ namespace CNCPlasmaERP.UI.ViewModels
             {
                 Suppliers.Add(supplier);
             }
+
+            SelectedMaterial = selectedMaterialId.HasValue
+                ? Materials.FirstOrDefault(m => m.Id == selectedMaterialId.Value)
+                : null;
+            SelectedSupplier = selectedSupplierId.HasValue
+                ? Suppliers.FirstOrDefault(s => s.Id == selectedSupplierId.Value)
+                : null;
 
             var recentPurchases = await _stockService.GetRecentPurchasesAsync();
             RecentPurchases.Clear();

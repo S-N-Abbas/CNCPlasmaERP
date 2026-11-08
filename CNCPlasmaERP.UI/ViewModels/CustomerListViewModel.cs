@@ -101,12 +101,17 @@ namespace CNCPlasmaERP.UI.ViewModels
         /// <summary>Raw helper (not RunBusyAsync-wrapped) so SaveCustomerAsync can reuse it after its own RunBusyAsync has started.</summary>
         private async Task LoadDataAsync()
         {
+            var selectedCustomerId = SelectedCustomer?.Id;
             var customers = await _customerService.GetAllAsync();
             Customers.Clear();
             foreach (var customer in customers)
             {
                 Customers.Add(customer);
             }
+
+            SelectedCustomer = selectedCustomerId.HasValue
+                ? Customers.FirstOrDefault(c => c.Id == selectedCustomerId.Value)
+                : null;
         }
 
         [RelayCommand]

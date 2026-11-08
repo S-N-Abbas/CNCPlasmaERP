@@ -1,3 +1,4 @@
+using CommunityToolkit.Mvvm.ComponentModel;
 using CNCPlasmaERP.UI.ViewModels.Base;
 using Microsoft.Extensions.Logging;
 
@@ -15,5 +16,20 @@ namespace CNCPlasmaERP.UI.ViewModels
 
         public ExpenseListViewModel ExpenseList { get; }
         public WagesViewModel Wages { get; }
+
+        [ObservableProperty]
+        private int selectedTabIndex;
+
+        partial void OnSelectedTabIndexChanged(int value)
+        {
+            if (value == 0)
+            {
+                ExpenseList.LoadCommand.Execute(null);
+            }
+            else if (value == 1)
+            {
+                Wages.LoadCommand.Execute(null);
+            }
+        }
     }
 }

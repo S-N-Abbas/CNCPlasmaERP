@@ -102,6 +102,19 @@ Run cases in order. Record **Pass**, **Fail**, or **Blocked**, plus what you obs
 | H3 | Close and reopen the test profile; inspect jobs, invoices, payments, balances, stock, scrap, and reports. | Saved records persist and all calculated balances match the values above. |
 | H4 | Review the ledger, invoice list, purchase history, and job details for the same records. | Each transaction appears once; linked customer/material/supplier and amounts agree across screens. |
 
+### I. Tab refresh regression checks
+
+Perform these checks without leaving the current main menu. They specifically cover the stale-tab issue.
+
+| ID | Action | Expected result |
+|---|---|---|
+| I1 | In Invoicing, generate an invoice from a completed job, then select Invoices. Return to Generate Invoice. | The invoice appears immediately in the list; the invoiced job is absent from the completed-jobs list. No main-menu navigation is needed. |
+| I2 | Select an unpaid invoice, switch to Payments, record a partial payment, then return to Invoices. | The same invoice remains selected and shows Partially Paid with its updated balance. |
+| I3 | Pay the remaining balance, return to Invoices, then return to Payments. | Invoice shows Paid and zero balance; the paid invoice is gone from outstanding choices and the new payment appears in recent payments. |
+| I4 | In Stock, record a purchase in Purchases, switch to Materials, then back. | Material kg/sheet totals and the purchase history both reflect the new transaction. |
+| I5 | In Stock, sell scrap in Scrap, switch away and back to Scrap. | The displayed scrap balance and recent sale list reflect the sale. |
+| I6 | In Customers, add or edit a customer, switch between Customers and Ledger. | The ledger customer choices reflect the latest active customer details; the selected customer and statement remain selected when still valid. |
+
 ## Results log
 
 For each case, note: `ID | Pass/Fail/Blocked | observed result | record number | screenshot/log detail`. The app writes diagnostic logs under the launched profile's `Logs` folder; redact passwords and customer information before sharing logs.
