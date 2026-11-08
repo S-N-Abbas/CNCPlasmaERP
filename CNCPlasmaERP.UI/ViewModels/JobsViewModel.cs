@@ -54,6 +54,7 @@ namespace CNCPlasmaERP.UI.ViewModels
 
         public ObservableCollection<Job> Jobs { get; } = new();
         public ObservableCollection<Customer> Customers { get; } = new();
+        public ObservableCollection<Customer> JobCustomerOptions { get; } = new();
         public ObservableCollection<Material> Materials { get; } = new();
         public ObservableCollection<JobMaterialUsage> SelectedJobUsages { get; } = new();
         public ICollectionView JobsView { get; }
@@ -127,6 +128,7 @@ namespace CNCPlasmaERP.UI.ViewModels
         [NotifyPropertyChangedFor(nameof(ShowEmptyJobPanel))]
         [NotifyPropertyChangedFor(nameof(CanMarkCompleted))]
         [NotifyPropertyChangedFor(nameof(CanCancelJob))]
+        [NotifyPropertyChangedFor(nameof(CanEditSelectedJob))]
         private Job? selectedJobDetail;
 
         public bool CanMarkCompleted => SelectedJobDetail?.Status == JobStatus.InProgress ||
@@ -135,6 +137,8 @@ namespace CNCPlasmaERP.UI.ViewModels
 
         public bool CanCancelJob => SelectedJobDetail?.Status == JobStatus.Pending ||
             (SelectedJobDetail?.Status == JobStatus.InProgress && SelectedJobUsages.Count == 0);
+
+        public bool CanEditSelectedJob => SelectedJobDetail is { Status: not (JobStatus.Invoiced or JobStatus.Cancelled) };
 
         public bool ShowJobDetails => !IsCreatingJob && SelectedJobDetail is not null;
         public bool ShowEmptyJobPanel => !IsCreatingJob && SelectedJobDetail is null;
@@ -155,6 +159,12 @@ namespace CNCPlasmaERP.UI.ViewModels
         [ObservableProperty] private decimal newJobCarriageCharges;
         [ObservableProperty] private string? newJobDescription;
 
+        // The saved job's commercial details stay editable in its workspace.
+        [ObservableProperty] private Customer? editJobCustomer;
+        [ObservableProperty] private decimal editJobServiceCharges;
+        [ObservableProperty] private decimal editJobCarriageCharges;
+        [ObservableProperty] private string? editJobDescription;
+
         // Add Usage form
         [ObservableProperty] private Material? usageMaterial;
         [ObservableProperty] private decimal usageWeightKg;
@@ -172,6 +182,13 @@ namespace CNCPlasmaERP.UI.ViewModels
                 foreach (var customer in customers)
                 {
                     Customers.Add(customer);
+                }
+
+                var allCustomers = await _customerService.GetAllAsync();
+                JobCustomerOptions.Clear();
+                foreach (var customer in allCustomers)
+                {
+                    JobCustomerOptions.Add(customer);
                 }
 
                 var materials = await _materialService.GetActiveAsync();
@@ -235,11 +252,48 @@ namespace CNCPlasmaERP.UI.ViewModels
 
             if (job is not null)
             {
+                EditJobCustomer = JobCustomerOptions.FirstOrDefault(c => c.Id == job.CustomerId);
+                EditJobServiceCharges = job.ServiceCharges;
+                EditJobCarriageCharges = job.CarriageCharges;
+                EditJobDescription = job.Description;
+
                 foreach (var usage in job.MaterialUsages)
                 {
                     SelectedJobUsages.Add(usage);
                 }
             }
+        }
+
+        [RelayCommand]
+        private async Task SaveJobDetailsAsync()
+        {
+            await RunBusyAsync(async () =>
+            {
+                if (SelectedJobDetail is null)
+                {
+                    return;
+                }
+
+                if (EditJobCustomer is null)
+                {
+                    ErrorMessage = "Select a customer.";
+                    return;
+                }
+
+                var jobId = SelectedJobDetail.Id;
+                var jobNumber = SelectedJobDetail.JobNumber;
+                await _jobService.UpdateJobDetailsAsync(
+                    jobId,
+                    EditJobCustomer.Id,
+                    EditJobServiceCharges,
+                    EditJobCarriageCharges,
+                    EditJobDescription);
+
+                await LoadJobsDataAsync();
+                SelectedJob = Jobs.FirstOrDefault(j => j.Id == jobId);
+                await LoadJobDetailDataAsync();
+                StatusMessage = $"Job {jobNumber} details saved.";
+            });
         }
 
         [RelayCommand]
@@ -375,6 +429,11 @@ namespace CNCPlasmaERP.UI.ViewModels
             if (Customers.All(c => c.Id != message.Value.Id))
             {
                 Customers.Add(message.Value);
+            }
+
+            if (JobCustomerOptions.All(c => c.Id != message.Value.Id))
+            {
+                JobCustomerOptions.Add(message.Value);
             }
         }
 

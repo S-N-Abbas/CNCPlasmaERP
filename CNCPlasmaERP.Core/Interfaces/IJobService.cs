@@ -14,6 +14,9 @@ namespace CNCPlasmaERP.Core.Interfaces
     {
         Task<Job> CreateJobAsync(Job job);
 
+        /// <summary>Updates the editable customer and charges on a job that has not been invoiced or cancelled.</summary>
+        Task UpdateJobDetailsAsync(int jobId, int customerId, decimal serviceCharges, decimal carriageCharges, string? description);
+
         /// <summary>Consumes material for a job via IStockService and flips the job to InProgress if it was still Pending.</summary>
         Task<JobMaterialUsage> AddMaterialUsageAsync(
             int jobId,

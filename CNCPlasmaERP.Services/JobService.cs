@@ -44,6 +44,10 @@ namespace CNCPlasmaERP.Services
             ServiceAuthorization.Require(_currentUserContext, Permission.ManageJobs);
             if (job.ServiceCharges < 0 || job.CarriageCharges < 0)
                 throw new BusinessValidationException("Job charges cannot be negative.");
+            var customer = await _unitOfWork.Customers.GetByIdAsync(job.CustomerId)
+                ?? throw new KeyNotFoundException($"Customer {job.CustomerId} not found.");
+            if (!customer.IsActive)
+                throw new BusinessValidationException("Select an active customer for this job.");
             job.JobNumber = await _numberSequenceService.GenerateJobNumberAsync();
             job.Status = JobStatus.Pending;
 
@@ -53,6 +57,48 @@ namespace CNCPlasmaERP.Services
             _logger.LogInformation("Job {JobNumber} created for Customer {CustomerId}", job.JobNumber, job.CustomerId);
 
             return job;
+        }
+
+        public async Task UpdateJobDetailsAsync(
+            int jobId,
+            int customerId,
+            decimal serviceCharges,
+            decimal carriageCharges,
+            string? description)
+        {
+            ServiceAuthorization.Require(_currentUserContext, Permission.ManageJobs);
+
+            if (serviceCharges < 0 || carriageCharges < 0)
+            {
+                throw new BusinessValidationException("Job charges cannot be negative.");
+            }
+
+            await using var transaction = await _unitOfWork.BeginTransactionAsync(IsolationLevel.Serializable);
+            var job = await _unitOfWork.Jobs.GetByIdAsync(jobId)
+                ?? throw new KeyNotFoundException($"Job {jobId} not found.");
+
+            if (job.Status is JobStatus.Invoiced or JobStatus.Cancelled)
+            {
+                throw new InvalidJobStateException($"Cannot edit Job {job.JobNumber} because it is {job.Status}.");
+            }
+
+            var customer = await _unitOfWork.Customers.GetByIdAsync(customerId)
+                ?? throw new KeyNotFoundException($"Customer {customerId} not found.");
+            if (!customer.IsActive)
+            {
+                throw new BusinessValidationException("Select an active customer for this job.");
+            }
+
+            job.CustomerId = customerId;
+            job.ServiceCharges = serviceCharges;
+            job.CarriageCharges = carriageCharges;
+            job.Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim();
+
+            _unitOfWork.Jobs.Update(job);
+            await _unitOfWork.SaveChangesAsync();
+            await transaction.CommitAsync();
+
+            _logger.LogInformation("Details updated for Job {JobNumber}", job.JobNumber);
         }
 
         public async Task<JobMaterialUsage> AddMaterialUsageAsync(

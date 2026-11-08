@@ -104,8 +104,8 @@
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
-                        <RowDefinition Height="*" />
                         <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
 
                     <!-- Job Detail Header -->
@@ -150,8 +150,71 @@
                         </StackPanel>
                     </Grid>
 
-                    <!-- Add Material Usage Sub-Form -->
+                    <!-- Editable customer and charges remain visible after creation. -->
                     <Border Grid.Row="1"
+                            Background="{DynamicResource MahApps.Brushes.Gray10}"
+                            CornerRadius="6"
+                            Padding="12"
+                            Margin="0,0,0,12"
+                            IsEnabled="{Binding CanEditSelectedJob}">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <Grid Grid.Row="0" Margin="0,0,0,8">
+                                <TextBlock Text="Job Details" FontSize="13" FontWeight="Bold"
+                                           Foreground="{DynamicResource MahApps.Brushes.Text}" />
+                                <TextBlock Text="Locked after invoicing or cancellation"
+                                           HorizontalAlignment="Right" FontSize="11"
+                                           Foreground="{DynamicResource MahApps.Brushes.Gray3}"
+                                           Visibility="{Binding CanEditSelectedJob, Converter={StaticResource InverseBooleanToVisibilityConverter}}" />
+                            </Grid>
+                            <Grid Grid.Row="1" Margin="0,0,0,6">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="2*" />
+                                    <ColumnDefinition Width="10" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="10" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <ComboBox Grid.Column="0" ItemsSource="{Binding JobCustomerOptions}"
+                                          SelectedItem="{Binding EditJobCustomer}" DisplayMemberPath="Name"
+                                          mah:TextBoxHelper.Watermark="Customer"
+                                          mah:TextBoxHelper.UseFloatingWatermark="True"
+                                          Style="{StaticResource MahApps.Styles.ComboBox}" Margin="0" />
+                                <TextBox Grid.Column="2"
+                                         Text="{Binding EditJobServiceCharges, Converter={StaticResource DecimalTextConverter}, UpdateSourceTrigger=PropertyChanged}"
+                                         mah:TextBoxHelper.Watermark="Service Charges"
+                                         mah:TextBoxHelper.UseFloatingWatermark="True"
+                                         Style="{StaticResource MahApps.Styles.TextBox}" Margin="0" />
+                                <TextBox Grid.Column="4"
+                                         Text="{Binding EditJobCarriageCharges, Converter={StaticResource DecimalTextConverter}, UpdateSourceTrigger=PropertyChanged}"
+                                         mah:TextBoxHelper.Watermark="Carriage Charges"
+                                         mah:TextBoxHelper.UseFloatingWatermark="True"
+                                         Style="{StaticResource MahApps.Styles.TextBox}" Margin="0" />
+                            </Grid>
+                            <Grid Grid.Row="2">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="12" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <TextBox Grid.Column="0" Text="{Binding EditJobDescription, UpdateSourceTrigger=PropertyChanged}"
+                                         mah:TextBoxHelper.Watermark="Description (optional)"
+                                         mah:TextBoxHelper.UseFloatingWatermark="True"
+                                         Style="{StaticResource MahApps.Styles.TextBox}" Margin="0" />
+                                <Button Grid.Column="2" Content="Save Job Details"
+                                        Style="{StaticResource PrimaryButton}" Height="34"
+                                        Command="{Binding SaveJobDetailsCommand}"
+                                        IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}" />
+                            </Grid>
+                        </Grid>
+                    </Border>
+
+                    <!-- Add Material Usage Sub-Form -->
+                    <Border Grid.Row="2"
                             Background="{DynamicResource MahApps.Brushes.Gray10}"
                             CornerRadius="6"
                             Padding="14"
@@ -227,7 +290,7 @@
                     </Border>
 
                     <!-- Material Usages DataGrid -->
-                    <DataGrid Grid.Row="2"
+                    <DataGrid Grid.Row="3"
                               ItemsSource="{Binding SelectedJobUsages}"
                               AutoGenerateColumns="False"
                               IsReadOnly="True"
@@ -336,28 +399,6 @@
                         </DataGrid.Columns>
                     </DataGrid>
 
-                    <!-- Summary Footer -->
-                    <StackPanel Grid.Row="3"
-                                Orientation="Horizontal"
-                                HorizontalAlignment="Right"
-                                Margin="0,14,0,0">
-                        <TextBlock Text="Service Charges: "
-                                   Foreground="{DynamicResource MahApps.Brushes.Gray3}"
-                                   FontSize="13" />
-                        <TextBlock Text="{Binding SelectedJobDetail.ServiceCharges, StringFormat=N2}"
-                                   FontWeight="Bold"
-                                   FontSize="13"
-                                   Foreground="{DynamicResource MahApps.Brushes.Text}"
-                                   Margin="0,0,20,0" />
-
-                        <TextBlock Text="Carriage Charges: "
-                                   Foreground="{DynamicResource MahApps.Brushes.Gray3}"
-                                   FontSize="13" />
-                        <TextBlock Text="{Binding SelectedJobDetail.CarriageCharges, StringFormat=N2}"
-                                   FontWeight="Bold"
-                                   FontSize="13"
-                                   Foreground="{DynamicResource MahApps.Brushes.Text}" />
-                    </StackPanel>
                     </Grid>
 
                     <ScrollViewer VerticalScrollBarVisibility="Auto"
