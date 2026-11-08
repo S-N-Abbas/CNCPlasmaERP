@@ -106,6 +106,18 @@
                                   FontSize="13"
                                   Margin="0,0,0,12"
                                   Style="{StaticResource MahApps.Styles.ComboBox}" />
+
+                        <StackPanel Orientation="Horizontal"
+                                    Margin="0,-4,0,12"
+                                    Visibility="{Binding SelectedInvoice, Converter={StaticResource NullToVisibilityConverter}}">
+                            <TextBlock Text="Amount Due:"
+                                       FontWeight="SemiBold"
+                                       Foreground="{DynamicResource MahApps.Brushes.Gray3}"
+                                       Margin="0,0,8,0" />
+                            <TextBlock Text="{Binding SelectedInvoice.BalanceAmount, StringFormat=N2}"
+                                       FontWeight="Bold"
+                                       Foreground="{DynamicResource MahApps.Brushes.Text}" />
+                        </StackPanel>
                     </StackPanel>
 
                     <!-- Amount -->

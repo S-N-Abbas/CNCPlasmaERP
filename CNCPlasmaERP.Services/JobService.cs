@@ -121,9 +121,20 @@ namespace CNCPlasmaERP.Services
             if (!Enum.IsDefined(newStatus) || newStatus == JobStatus.Invoiced)
                 throw new InvalidJobStateException("Invoiced status can only be set by creating an invoice.");
 
+            if (job.Status == newStatus)
+            {
+                return;
+            }
+
             if (job.Status is JobStatus.Invoiced or JobStatus.Cancelled)
             {
                 throw new InvalidJobStateException($"Cannot change Job {job.JobNumber} from {job.Status}.");
+            }
+
+            if (job.Status == JobStatus.Completed)
+            {
+                throw new InvalidJobStateException(
+                    $"Completed Job {job.JobNumber} cannot be changed to {newStatus}. Invoice it to close the job.");
             }
 
             if (newStatus == JobStatus.Cancelled && await _unitOfWork.JobMaterialUsages.Query().AnyAsync(u => u.JobId == jobId))
@@ -134,8 +145,6 @@ namespace CNCPlasmaERP.Services
                 throw new InvalidJobStateException("Only an in-progress job can be marked completed.");
             if (newStatus == JobStatus.Pending && job.Status != JobStatus.Pending)
                 throw new InvalidJobStateException("A job cannot be returned to pending after work has started.");
-            if (job.Status == newStatus) return;
-
             job.Status = newStatus;
             _unitOfWork.Jobs.Update(job);
             await _unitOfWork.SaveChangesAsync();

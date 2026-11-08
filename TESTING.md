@@ -54,7 +54,7 @@ Run cases in order. Record **Pass**, **Fail**, or **Blocked**, plus what you obs
 | C2 | Attempt a purchase with zero/negative weight or rate, negative carriage, or negative sheet count. | Validation rejects it; no purchase row, stock change, or expense is recorded. |
 | C3 | Create a job for the test customer: service 500, carriage 200. Add usage of 10 kg and 2 sheets at selling rate 300/kg, with 1.5 kg scrap. | Job moves Pending → In Progress. Stock becomes 90 kg / 2 sheets; scrap balance becomes 1.5 kg. Usage snapshots purchase cost rate 200/kg and selling rate 300/kg. |
 | C4 | Attempt usage above available kg/sheets, negative sheet count, or scrap greater than usage weight. | Attempt is rejected and stock/scrap balances remain unchanged. |
-| C5 | Complete the main job and try adding more usage. After E1 invoices it, try removing usage. | Adding usage to a completed job is rejected. After invoicing, removal is also rejected and stock/scrap stay unchanged. |
+| C5 | Complete the main job and try adding more usage. After E1 invoices it, try removing usage. | Adding usage to a completed job is rejected. After invoicing, removal is also rejected and stock/scrap stay unchanged. Completed jobs expose no Cancel action. |
 | C6 | Create a second temporary job, record 1 kg / 1 sheet usage and 0.5 kg scrap, then try to cancel it. Reverse that usage and cancel the temporary job before selling any of its scrap. | Cancellation is first rejected while usage exists. Reversal restores the 90 kg / 2-sheet stock and 1.5 kg main-job scrap balances; cancellation then succeeds. |
 
 ### D. Scrap sale
@@ -70,7 +70,7 @@ Run cases in order. Record **Pass**, **Fail**, or **Blocked**, plus what you obs
 |---|---|---|
 | E1 | With tax disabled, generate an invoice for the completed job. Try removing usage and deactivating the customer before taking payment. | Lines are material 3,000 + service 500 + carriage 200; subtotal/grand total is 3,700. Job becomes Invoiced and one matching debit appears in the ledger. Usage removal and customer deactivation are rejected; no balances change. |
 | E2 | Try to generate another invoice for that job. | Rejected; no second invoice or ledger debit appears. |
-| E3 | Record a 1,000 payment against the invoice. | Invoice becomes Partially Paid; amount due is 2,700; customer balance falls by 1,000. |
+| E3 | Select the invoice in Payments, note the displayed Amount Due, then record a 1,000 payment. | Before payment, Amount Due shows 3,700. Invoice becomes Partially Paid; amount due becomes 2,700; customer balance falls by 1,000. |
 | E4 | Attempt payment above the remaining invoice amount or attach an invoice belonging to another customer. | Rejected; invoice paid amount and customer ledgers remain unchanged. |
 | E5 | Pay the remaining 2,700. | Invoice becomes Paid, amount due is zero, and the customer balance reconciles to the sum of ledger entries (zero for this main customer). |
 
@@ -97,7 +97,7 @@ Run cases in order. Record **Pass**, **Fail**, or **Blocked**, plus what you obs
 
 | ID | Action | Expected result |
 |---|---|---|
-| H1 | Create a separate `TEST Tax Customer` and a service-only job with a 3,700 charge. Enable 10% tax in Settings, complete and invoice it. | Tax is 370 and grand total 4,070. Do this after G2–G6 so it doesn’t affect the main workflow report totals. |
+| H1 | Create a separate `TEST Tax Customer` and a service-only job with a 3,700 charge. Enable 10% tax in Settings, complete and invoice it. | A completed job cannot be cancelled and exposes no Cancel action. Tax is 370 and grand total 4,070. Do this after G2–G6 so it doesn’t affect the main workflow report totals. |
 | H2 | After E5, deactivate the settled main customer. Try deactivating the stocked material and supplier; deactivate the unused material. | Customer deactivation succeeds at zero and ledger history remains. Material deactivation fails while kg/sheets remain. The unused material can be deactivated. The inactive supplier is hidden from active choices but stays visible on its historical purchase. |
 | H3 | Close and reopen the test profile; inspect jobs, invoices, payments, balances, stock, scrap, and reports. | Saved records persist and all calculated balances match the values above. |
 | H4 | Review the ledger, invoice list, purchase history, and job details for the same records. | Each transaction appears once; linked customer/material/supplier and amounts agree across screens. |

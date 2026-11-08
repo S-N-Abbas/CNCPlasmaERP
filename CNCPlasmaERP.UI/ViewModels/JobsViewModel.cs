@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Collections.Specialized;
 using CNCPlasmaERP.Core.Entities;
 using CNCPlasmaERP.Core.Enums;
 using CNCPlasmaERP.Core.Interfaces;
@@ -38,6 +39,8 @@ namespace CNCPlasmaERP.UI.ViewModels
             _customerService = customerService;
             _materialService = materialService;
 
+            SelectedJobUsages.CollectionChanged += OnSelectedJobUsagesChanged;
+
             WeakReferenceMessenger.Default.RegisterAll(this);
 
             selectedStatusFilter = StatusFilterOptions[0];
@@ -49,6 +52,9 @@ namespace CNCPlasmaERP.UI.ViewModels
         public ObservableCollection<Customer> Customers { get; } = new();
         public ObservableCollection<Material> Materials { get; } = new();
         public ObservableCollection<JobMaterialUsage> SelectedJobUsages { get; } = new();
+
+        private void OnSelectedJobUsagesChanged(object? sender, NotifyCollectionChangedEventArgs e) =>
+            OnPropertyChanged(nameof(CanCancelJob));
 
         public List<JobStatusFilterItem> StatusFilterOptions { get; } = new()
         {
@@ -69,7 +75,16 @@ namespace CNCPlasmaERP.UI.ViewModels
         private Job? selectedJob;
 
         [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(CanMarkCompleted))]
+        [NotifyPropertyChangedFor(nameof(CanCancelJob))]
         private Job? selectedJobDetail;
+
+        public bool CanMarkCompleted => SelectedJobDetail?.Status == JobStatus.InProgress ||
+            (SelectedJobDetail?.Status == JobStatus.Pending &&
+             (SelectedJobDetail.ServiceCharges > 0 || SelectedJobDetail.CarriageCharges > 0));
+
+        public bool CanCancelJob => SelectedJobDetail?.Status == JobStatus.Pending ||
+            (SelectedJobDetail?.Status == JobStatus.InProgress && SelectedJobUsages.Count == 0);
 
         partial void OnSelectedJobChanged(Job? value) => _ = RunBusyAsync(LoadJobDetailDataAsync);
 
