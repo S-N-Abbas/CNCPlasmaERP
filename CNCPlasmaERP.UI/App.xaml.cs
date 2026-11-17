@@ -170,6 +170,7 @@ namespace CNCPlasmaERP.UI
 
             services.AddScoped<IMaterialService, MaterialService>();
             services.AddScoped<ISupplierService, SupplierService>();
+            services.AddScoped<ISupplierLedgerService, SupplierLedgerService>();
             services.AddScoped<ICustomerService, CustomerService>();
             services.AddScoped<ISettingsService, SettingsService>();
 
@@ -198,6 +199,7 @@ namespace CNCPlasmaERP.UI
             services.AddTransient<CustomerLedgerViewModel>();
             services.AddTransient<CustomersViewModel>();
             services.AddTransient<SuppliersViewModel>();
+            services.AddTransient<SupplierLedgerViewModel>();
             services.AddTransient<JobsViewModel>();
             services.AddTransient<GenerateInvoiceViewModel>();
             services.AddTransient<InvoiceListViewModel>();

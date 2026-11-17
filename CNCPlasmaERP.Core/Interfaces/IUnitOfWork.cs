@@ -27,6 +27,8 @@ namespace CNCPlasmaERP.Core.Interfaces
         IGenericRepository<Expense> Expenses { get; }
         IGenericRepository<User> Users { get; }
         IGenericRepository<CustomerLedgerEntry> LedgerEntries { get; }
+        IGenericRepository<SupplierLedgerEntry> SupplierLedgerEntries { get; }
+        IGenericRepository<SupplierPayment> SupplierPayments { get; }
 
         // Aggregates with custom eager-loading queries.
         IJobRepository Jobs { get; }

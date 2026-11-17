@@ -58,6 +58,15 @@ namespace CNCPlasmaERP.Core.Enums
         OpeningBalance
     }
 
+    /// <summary>Supplier ledger movement. Credit increases payable; debit reduces it.</summary>
+    public enum SupplierTransactionType
+    {
+        OpeningBalance,
+        Purchase,
+        Payment,
+        Adjustment
+    }
+
     /// <summary>Category of a printed invoice line item.</summary>
     public enum InvoiceItemType
     {

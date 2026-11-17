@@ -1,8 +1,11 @@
 <UserControl x:Class="CNCPlasmaERP.UI.Views.SuppliersView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls">
-    <Grid Margin="16">
+             xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
+             xmlns:views="clr-namespace:CNCPlasmaERP.UI.Views">
+    <TabControl Margin="16" SelectedIndex="{Binding SelectedTabIndex, Mode=TwoWay}" BorderThickness="0" Style="{StaticResource MahApps.Styles.TabControl}">
+      <TabItem Header="Suppliers" Style="{StaticResource MahApps.Styles.TabItem}">
+       <Grid Margin="8">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
             <ColumnDefinition Width="320" />
@@ -39,6 +42,10 @@
                     <DataGridTextColumn Header="Email"
                                         Binding="{Binding Email}"
                                         Width="180" />
+
+                    <DataGridTextColumn Header="Balance owed"
+                                        Binding="{Binding CurrentBalance, StringFormat=N2}"
+                                        Width="120" />
 
                     <DataGridCheckBoxColumn Header="Active"
                                             Binding="{Binding IsActive}"
@@ -121,6 +128,13 @@
                              Margin="0,0,0,16"
                              Style="{StaticResource MahApps.Styles.TextBox}" />
 
+                    <TextBox Text="{Binding NewOpeningBalance, Converter={StaticResource DecimalTextConverter}, UpdateSourceTrigger=PropertyChanged}"
+                             mah:TextBoxHelper.Watermark="Opening balance (positive = we owe supplier)"
+                             mah:TextBoxHelper.UseFloatingWatermark="True"
+                             Visibility="{Binding IsEditing, Converter={StaticResource InverseBooleanToVisibilityConverter}}"
+                             Margin="0,0,0,12"
+                             Style="{StaticResource MahApps.Styles.TextBox}" />
+
                     <CheckBox Content="Active"
                               IsChecked="{Binding NewIsActive}"
                               Visibility="{Binding IsEditing, Converter={StaticResource BooleanToVisibilityConverter}}"
@@ -148,5 +162,10 @@
                 </StackPanel>
             </ScrollViewer>
         </Border>
-    </Grid>
+       </Grid>
+      </TabItem>
+      <TabItem Header="Supplier Ledger" DataContext="{Binding Ledger}" Style="{StaticResource MahApps.Styles.TabItem}">
+        <views:SupplierLedgerView />
+      </TabItem>
+    </TabControl>
 </UserControl>

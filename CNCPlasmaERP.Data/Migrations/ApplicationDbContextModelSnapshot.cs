@@ -940,6 +940,10 @@ namespace CNCPlasmaERP.Data.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<decimal>("CurrentBalance")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<string>("Email")
                         .HasMaxLength(150)
                         .HasColumnType("nvarchar(150)");
@@ -955,6 +959,10 @@ namespace CNCPlasmaERP.Data.Migrations
                         .HasMaxLength(150)
                         .HasColumnType("nvarchar(150)");
 
+                    b.Property<decimal>("OpeningBalance")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<string>("Phone")
                         .HasMaxLength(30)
                         .HasColumnType("nvarchar(30)");
@@ -967,6 +975,118 @@ namespace CNCPlasmaERP.Data.Migrations
                     b.HasIndex("Name");
 
                     b.ToTable("Suppliers", (string)null);
+                });
+
+            modelBuilder.Entity("CNCPlasmaERP.Core.Entities.SupplierLedgerEntry", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal>("Credit")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("Debit")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("EntryDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Notes")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("RunningBalance")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int?>("StockPurchaseId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SupplierId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("SupplierPaymentId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("StockPurchaseId")
+                        .IsUnique()
+                        .HasFilter("[StockPurchaseId] IS NOT NULL");
+
+                    b.HasIndex("SupplierPaymentId")
+                        .IsUnique()
+                        .HasFilter("[SupplierPaymentId] IS NOT NULL");
+
+                    b.HasIndex("SupplierId", "EntryDate");
+
+                    b.ToTable("SupplierLedgerEntries", (string)null);
+                });
+
+            modelBuilder.Entity("CNCPlasmaERP.Core.Entities.SupplierPayment", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("Method")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<int?>("PaidByUserId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("PaymentDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ReferenceNumber")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int>("SupplierId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PaidByUserId");
+
+                    b.HasIndex("SupplierId");
+
+                    b.ToTable("SupplierPayments", (string)null);
                 });
 
             modelBuilder.Entity("CNCPlasmaERP.Core.Entities.User", b =>
@@ -988,16 +1108,16 @@ namespace CNCPlasmaERP.Data.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
-                    b.Property<bool>("MustChangePassword")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(false);
-
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
                     b.Property<DateTime?>("LastLoginAt")
                         .HasColumnType("datetime2");
+
+                    b.Property<bool>("MustChangePassword")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
 
                     b.Property<string>("PasswordHash")
                         .IsRequired()
@@ -1251,6 +1371,49 @@ namespace CNCPlasmaERP.Data.Migrations
                     b.Navigation("Supplier");
                 });
 
+            modelBuilder.Entity("CNCPlasmaERP.Core.Entities.SupplierLedgerEntry", b =>
+                {
+                    b.HasOne("CNCPlasmaERP.Core.Entities.StockPurchase", "StockPurchase")
+                        .WithMany()
+                        .HasForeignKey("StockPurchaseId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("CNCPlasmaERP.Core.Entities.Supplier", "Supplier")
+                        .WithMany("LedgerEntries")
+                        .HasForeignKey("SupplierId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("CNCPlasmaERP.Core.Entities.SupplierPayment", "SupplierPayment")
+                        .WithMany()
+                        .HasForeignKey("SupplierPaymentId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("StockPurchase");
+
+                    b.Navigation("Supplier");
+
+                    b.Navigation("SupplierPayment");
+                });
+
+            modelBuilder.Entity("CNCPlasmaERP.Core.Entities.SupplierPayment", b =>
+                {
+                    b.HasOne("CNCPlasmaERP.Core.Entities.User", "PaidByUser")
+                        .WithMany()
+                        .HasForeignKey("PaidByUserId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("CNCPlasmaERP.Core.Entities.Supplier", "Supplier")
+                        .WithMany("Payments")
+                        .HasForeignKey("SupplierId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("PaidByUser");
+
+                    b.Navigation("Supplier");
+                });
+
             modelBuilder.Entity("CNCPlasmaERP.Core.Entities.Customer", b =>
                 {
                     b.Navigation("Invoices");
@@ -1294,6 +1457,10 @@ namespace CNCPlasmaERP.Data.Migrations
 
             modelBuilder.Entity("CNCPlasmaERP.Core.Entities.Supplier", b =>
                 {
+                    b.Navigation("LedgerEntries");
+
+                    b.Navigation("Payments");
+
                     b.Navigation("Purchases");
                 });
 #pragma warning restore 612, 618

@@ -13,6 +13,8 @@ namespace CNCPlasmaERP.Data.Context.Configurations
             builder.Property(s => s.Name).IsRequired().HasMaxLength(150);
             builder.Property(s => s.Phone).HasMaxLength(30);
             builder.Property(s => s.Email).HasMaxLength(150);
+            builder.Property(s => s.OpeningBalance).HasPrecision(18, 2);
+            builder.Property(s => s.CurrentBalance).HasPrecision(18, 2);
 
             builder.HasIndex(s => s.Name);
         }

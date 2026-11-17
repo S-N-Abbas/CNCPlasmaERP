@@ -25,6 +25,8 @@ namespace CNCPlasmaERP.Data
         private IGenericRepository<Expense>? _expenses;
         private IGenericRepository<User>? _users;
         private IGenericRepository<CustomerLedgerEntry>? _ledgerEntries;
+        private IGenericRepository<SupplierLedgerEntry>? _supplierLedgerEntries;
+        private IGenericRepository<SupplierPayment>? _supplierPayments;
 
         private IJobRepository? _jobs;
         private IInvoiceRepository? _invoices;
@@ -49,6 +51,8 @@ namespace CNCPlasmaERP.Data
         public IGenericRepository<Expense> Expenses => _expenses ??= new GenericRepository<Expense>(_context);
         public IGenericRepository<User> Users => _users ??= new GenericRepository<User>(_context);
         public IGenericRepository<CustomerLedgerEntry> LedgerEntries => _ledgerEntries ??= new GenericRepository<CustomerLedgerEntry>(_context);
+        public IGenericRepository<SupplierLedgerEntry> SupplierLedgerEntries => _supplierLedgerEntries ??= new GenericRepository<SupplierLedgerEntry>(_context);
+        public IGenericRepository<SupplierPayment> SupplierPayments => _supplierPayments ??= new GenericRepository<SupplierPayment>(_context);
 
         public IJobRepository Jobs => _jobs ??= new JobRepository(_context);
         public IInvoiceRepository Invoices => _invoices ??= new InvoiceRepository(_context);

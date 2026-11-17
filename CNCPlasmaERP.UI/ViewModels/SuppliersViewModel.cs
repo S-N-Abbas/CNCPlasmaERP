@@ -15,14 +15,23 @@ namespace CNCPlasmaERP.UI.ViewModels
     public partial class SuppliersViewModel : ViewModelBase, IRecipient<SupplierCreatedMessage>
     {
         private readonly ISupplierService _supplierService;
+        public SupplierLedgerViewModel Ledger { get; }
+        [ObservableProperty] private int selectedTabIndex;
 
-        public SuppliersViewModel(ISupplierService supplierService, ILogger<SuppliersViewModel> logger)
+        public SuppliersViewModel(ISupplierService supplierService, SupplierLedgerViewModel ledger, ILogger<SuppliersViewModel> logger)
             : base(logger)
         {
             _supplierService = supplierService;
+            Ledger = ledger;
 
             WeakReferenceMessenger.Default.RegisterAll(this);
             _ = LoadAsync();
+        }
+
+        partial void OnSelectedTabIndexChanged(int value)
+        {
+            if (value == 0) LoadCommand.Execute(null);
+            else if (value == 1) Ledger.LoadSuppliersCommand.Execute(null);
         }
 
         public ObservableCollection<Supplier> Suppliers { get; } = new();
@@ -54,6 +63,9 @@ namespace CNCPlasmaERP.UI.ViewModels
         private string? newAddress;
 
         [ObservableProperty]
+        private decimal newOpeningBalance;
+
+        [ObservableProperty]
         private bool newIsActive = true;
 
         partial void OnSelectedSupplierChanged(Supplier? value)
@@ -72,6 +84,7 @@ namespace CNCPlasmaERP.UI.ViewModels
             NewEmail = value.Email;
             NewAddress = value.Address;
             NewIsActive = value.IsActive;
+            NewOpeningBalance = 0;
         }
 
         private void ResetForm()
@@ -82,6 +95,7 @@ namespace CNCPlasmaERP.UI.ViewModels
             NewEmail = null;
             NewAddress = null;
             NewIsActive = true;
+            NewOpeningBalance = 0;
         }
 
         [RelayCommand]
@@ -131,7 +145,8 @@ namespace CNCPlasmaERP.UI.ViewModels
                     Phone = NewPhone,
                     Email = NewEmail,
                     Address = NewAddress,
-                    IsActive = editingId.HasValue ? NewIsActive : true
+                    IsActive = editingId.HasValue ? NewIsActive : true,
+                    OpeningBalance = editingId.HasValue ? 0 : NewOpeningBalance
                 };
 
                 int savedId;

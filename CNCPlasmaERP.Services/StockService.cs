@@ -22,10 +22,12 @@ namespace CNCPlasmaERP.Services
         private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger<StockService> _logger;
         private readonly ICurrentUserContext _currentUserContext;
+        private readonly ISupplierLedgerService _supplierLedgerService;
 
-        public StockService(IUnitOfWork unitOfWork, ICurrentUserContext currentUserContext, ILogger<StockService> logger)
+        public StockService(IUnitOfWork unitOfWork, ISupplierLedgerService supplierLedgerService, ICurrentUserContext currentUserContext, ILogger<StockService> logger)
         {
             _unitOfWork = unitOfWork;
+            _supplierLedgerService = supplierLedgerService;
             _currentUserContext = currentUserContext;
             _logger = logger;
         }
@@ -40,10 +42,15 @@ namespace CNCPlasmaERP.Services
 
             var material = await _unitOfWork.Materials.GetByIdAsync(purchase.MaterialId)
                 ?? throw new KeyNotFoundException($"Material {purchase.MaterialId} not found.");
+            var supplier = await _unitOfWork.Suppliers.GetByIdAsync(purchase.SupplierId)
+                ?? throw new KeyNotFoundException($"Supplier {purchase.SupplierId} not found.");
+            if (!supplier.IsActive)
+                throw new BusinessValidationException("Purchases cannot be recorded for an inactive supplier.");
 
             purchase.MaterialCost = System.Math.Round(purchase.WeightKg * purchase.RatePerKg, 2, System.MidpointRounding.AwayFromZero);
 
             await _unitOfWork.StockPurchases.AddAsync(purchase);
+            await _supplierLedgerService.PostPurchaseAsync(purchase);
 
             material.CurrentStockKg += purchase.WeightKg;
             if (purchase.SheetCount.HasValue)

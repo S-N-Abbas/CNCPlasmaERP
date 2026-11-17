@@ -14,10 +14,12 @@ namespace CNCPlasmaERP.Services
         private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger<SupplierService> _logger;
         private readonly ICurrentUserContext _currentUserContext;
+        private readonly ISupplierLedgerService _supplierLedgerService;
 
-        public SupplierService(IUnitOfWork unitOfWork, ICurrentUserContext currentUserContext, ILogger<SupplierService> logger)
+        public SupplierService(IUnitOfWork unitOfWork, ISupplierLedgerService supplierLedgerService, ICurrentUserContext currentUserContext, ILogger<SupplierService> logger)
         {
             _unitOfWork = unitOfWork;
+            _supplierLedgerService = supplierLedgerService;
             _logger = logger;
             _currentUserContext = currentUserContext;
         }
@@ -41,8 +43,12 @@ namespace CNCPlasmaERP.Services
             ServiceAuthorization.Require(_currentUserContext, Permission.ManageSuppliers);
             if (string.IsNullOrWhiteSpace(supplier.Name))
                 throw new BusinessValidationException("Supplier name is required.");
+            await using var transaction = await _unitOfWork.BeginTransactionAsync(System.Data.IsolationLevel.Serializable);
             await _unitOfWork.Suppliers.AddAsync(supplier);
             await _unitOfWork.SaveChangesAsync();
+            await _supplierLedgerService.PostOpeningBalanceAsync(supplier);
+            await _unitOfWork.SaveChangesAsync();
+            await transaction.CommitAsync();
 
             _logger.LogInformation("Supplier '{Name}' created", supplier.Name);
 

@@ -27,6 +27,8 @@ namespace CNCPlasmaERP.Data.Context
 
         public DbSet<Material> Materials => Set<Material>();
         public DbSet<Supplier> Suppliers => Set<Supplier>();
+        public DbSet<SupplierLedgerEntry> SupplierLedgerEntries => Set<SupplierLedgerEntry>();
+        public DbSet<SupplierPayment> SupplierPayments => Set<SupplierPayment>();
         public DbSet<StockPurchase> StockPurchases => Set<StockPurchase>();
         public DbSet<Scrap> Scraps => Set<Scrap>();
         public DbSet<ScrapSale> ScrapSales => Set<ScrapSale>();
