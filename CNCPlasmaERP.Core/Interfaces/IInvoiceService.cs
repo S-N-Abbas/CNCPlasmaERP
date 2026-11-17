@@ -11,7 +11,7 @@ namespace CNCPlasmaERP.Core.Interfaces
     /// </summary>
     public interface IInvoiceService
     {
-        Task<Invoice> CreateInvoiceFromJobAsync(int jobId, int? createdByUserId);
+        Task<Invoice> CreateInvoiceFromJobAsync(int jobId, int? createdByUserId, decimal otherCharges = 0m, decimal discountAmount = 0m);
 
         /// <summary>Invoice with Customer, Job, Items and Payments loaded — for printing/detail screens.</summary>
         Task<Invoice?> GetInvoiceWithDetailsAsync(int invoiceId);

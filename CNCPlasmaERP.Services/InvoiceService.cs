@@ -43,9 +43,13 @@ namespace CNCPlasmaERP.Services
             _logger = logger;
         }
 
-        public async Task<Invoice> CreateInvoiceFromJobAsync(int jobId, int? createdByUserId)
+        public async Task<Invoice> CreateInvoiceFromJobAsync(int jobId, int? createdByUserId, decimal otherCharges = 0m, decimal discountAmount = 0m)
         {
             ServiceAuthorization.Require(_currentUserContext, Permission.ManageInvoicesPayments);
+            if (otherCharges < 0 || discountAmount < 0)
+                throw new BusinessValidationException("Other charges and discount cannot be negative.");
+            otherCharges = Math.Round(otherCharges, 2, MidpointRounding.AwayFromZero);
+            discountAmount = Math.Round(discountAmount, 2, MidpointRounding.AwayFromZero);
             // Clean slate: clears any entity left tracked by an earlier,
             // unrelated operation in this shared session-wide DbContext before
             // this operation touches anything.
@@ -79,8 +83,13 @@ namespace CNCPlasmaERP.Services
                 var subTotal = items.Sum(i => i.Amount);
                 var taxApplied = settings.TaxEnabled;
                 var taxPercentage = taxApplied ? settings.TaxPercentage : 0m;
-                var taxAmount = Math.Round(subTotal * taxPercentage / 100m, 2, MidpointRounding.AwayFromZero);
-                var grandTotal = subTotal + taxAmount;
+                if (discountAmount > subTotal + otherCharges)
+                    throw new BusinessValidationException("Discount cannot exceed the invoice subtotal plus other charges.");
+                var taxableAmount = subTotal + otherCharges - discountAmount;
+                var taxAmount = Math.Round(taxableAmount * taxPercentage / 100m, 2, MidpointRounding.AwayFromZero);
+                var grandTotal = taxableAmount + taxAmount;
+                if (grandTotal <= 0)
+                    throw new BusinessValidationException("Invoice total must be greater than zero.");
 
                 var invoiceNumber = await _numberSequenceService.GenerateInvoiceNumberAsync();
 
@@ -91,6 +100,8 @@ namespace CNCPlasmaERP.Services
                     CustomerId = job.CustomerId,
                     InvoiceDate = DateTime.Now,
                     SubTotal = subTotal,
+                    OtherCharges = otherCharges,
+                    DiscountAmount = discountAmount,
                     TaxApplied = taxApplied,
                     TaxPercentage = taxPercentage,
                     TaxAmount = taxAmount,

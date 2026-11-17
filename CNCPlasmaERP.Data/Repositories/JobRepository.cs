@@ -40,6 +40,7 @@ namespace CNCPlasmaERP.Data.Repositories
         public async Task<IReadOnlyList<Job>> GetByStatusAsync(JobStatus status) =>
             await DbSet.AsNoTracking()
                 .Include(j => j.Customer)
+                .Include(j => j.MaterialUsages).ThenInclude(u => u.Material)
                 .Where(j => j.Status == status)
                 .OrderByDescending(j => j.JobDate)
                 .ToListAsync();

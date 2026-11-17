@@ -1,3 +1,4 @@
+using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
@@ -34,7 +35,32 @@ namespace CNCPlasmaERP.UI.ViewModels
         public ObservableCollection<Job> CompletedJobs { get; } = new();
 
         [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(InvoiceSubtotal))]
+        [NotifyPropertyChangedFor(nameof(EstimatedTotal))]
         private Job? selectedJob;
+
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(EstimatedTotal))]
+        private decimal otherCharges;
+
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(EstimatedTotal))]
+        private decimal discountAmount;
+
+        public decimal InvoiceSubtotal => SelectedJob is null ? 0m :
+            SelectedJob.MaterialUsages.Sum(u => u.SellingAmount) +
+            Math.Round(SelectedJob.ServiceCharges, 2, MidpointRounding.AwayFromZero) +
+            Math.Round(SelectedJob.CarriageCharges, 2, MidpointRounding.AwayFromZero);
+
+        public decimal EstimatedTotal => Math.Round(InvoiceSubtotal +
+            Math.Round(OtherCharges, 2, MidpointRounding.AwayFromZero) -
+            Math.Round(DiscountAmount, 2, MidpointRounding.AwayFromZero), 2, MidpointRounding.AwayFromZero);
+
+        partial void OnSelectedJobChanged(Job? value)
+        {
+            OtherCharges = 0;
+            DiscountAmount = 0;
+        }
 
         [RelayCommand]
         private async Task LoadAsync() => await RunBusyAsync(LoadDataAsync);
@@ -64,9 +90,19 @@ namespace CNCPlasmaERP.UI.ViewModels
                     ErrorMessage = "Select a job to invoice.";
                     return;
                 }
+                if (OtherCharges < 0 || DiscountAmount < 0)
+                {
+                    ErrorMessage = "Other charges and discount cannot be negative.";
+                    return;
+                }
+                if (DiscountAmount > InvoiceSubtotal + OtherCharges)
+                {
+                    ErrorMessage = "Discount cannot exceed the invoice subtotal plus other charges.";
+                    return;
+                }
 
                 var jobNumber = SelectedJob.JobNumber;
-                var invoice = await _invoiceService.CreateInvoiceFromJobAsync(SelectedJob.Id, _currentUserContext.CurrentUser?.Id);
+                var invoice = await _invoiceService.CreateInvoiceFromJobAsync(SelectedJob.Id, _currentUserContext.CurrentUser?.Id, OtherCharges, DiscountAmount);
                 StatusMessage = $"Invoice {invoice.InvoiceNumber} created for job {jobNumber}.";
 
                 SelectedJob = null;

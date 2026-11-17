@@ -120,15 +120,26 @@
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="130"/>
                             </Grid.ColumnDefinitions>
-                            <TextBox Grid.Column="0" Text="{Binding AdjustedOtherCharges, Converter={StaticResource DecimalTextConverter}, UpdateSourceTrigger=PropertyChanged}"
-                                     mah:TextBoxHelper.Watermark="Other charges" Margin="0,0,6,0"/>
-                            <TextBox Grid.Column="1" Text="{Binding AdjustedDiscountAmount, Converter={StaticResource DecimalTextConverter}, UpdateSourceTrigger=PropertyChanged}"
-                                     mah:TextBoxHelper.Watermark="Discount" Margin="0,0,6,0"/>
-                            <TextBox Grid.Column="2" Text="{Binding AdjustmentReason, UpdateSourceTrigger=PropertyChanged}"
-                                     mah:TextBoxHelper.Watermark="Required reason for correction" Margin="0,0,6,0"/>
+                            <StackPanel Grid.Column="0" Margin="0,0,6,0">
+                                <TextBlock Text="Other charges" FontSize="11" FontWeight="SemiBold" Margin="0,0,0,3"/>
+                                <TextBox Text="{Binding AdjustedOtherCharges, Converter={StaticResource DecimalTextConverter}, UpdateSourceTrigger=PropertyChanged}"
+                                         mah:TextBoxHelper.Watermark="Additional amount"/>
+                            </StackPanel>
+                            <StackPanel Grid.Column="1" Margin="0,0,6,0">
+                                <TextBlock Text="Discount amount" FontSize="11" FontWeight="SemiBold" Margin="0,0,0,3"/>
+                                <TextBox Text="{Binding AdjustedDiscountAmount, Converter={StaticResource DecimalTextConverter}, UpdateSourceTrigger=PropertyChanged}"
+                                         mah:TextBoxHelper.Watermark="Deducted before tax"/>
+                            </StackPanel>
+                            <StackPanel Grid.Column="2" Margin="0,0,6,0">
+                                <TextBlock Text="Correction reason (required)" FontSize="11" FontWeight="SemiBold" Margin="0,0,0,3"/>
+                                <TextBox Text="{Binding AdjustmentReason, UpdateSourceTrigger=PropertyChanged}"
+                                         mah:TextBoxHelper.Watermark="Explain why this invoice is changing"/>
+                            </StackPanel>
                             <Button Grid.Column="3" Content="Save Correction" Command="{Binding SaveAdjustmentCommand}"
-                                    Style="{StaticResource PrimaryButton}" IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}"/>
+                                    Style="{StaticResource PrimaryButton}" IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}" VerticalAlignment="Bottom"/>
                         </Grid>
+                        <TextBlock Text="Discount reduces the taxable amount; other charges increase it." FontSize="10"
+                                   Foreground="{DynamicResource MahApps.Brushes.Gray3}" Margin="0,5,0,0"/>
                         <TextBlock Text="{Binding ErrorMessage}" Foreground="#D92D20" Margin="0,5,0,0" TextWrapping="Wrap"/>
                         <TextBlock Text="{Binding StatusMessage}" Foreground="#16804A" Margin="0,3,0,0" TextWrapping="Wrap"/>
                         <Expander Header="Correction history" Margin="0,5,0,0">
