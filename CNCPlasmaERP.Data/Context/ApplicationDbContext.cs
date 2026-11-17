@@ -40,6 +40,7 @@ namespace CNCPlasmaERP.Data.Context
         public DbSet<JobMaterialUsage> JobMaterialUsages => Set<JobMaterialUsage>();
         public DbSet<Invoice> Invoices => Set<Invoice>();
         public DbSet<InvoiceItem> InvoiceItems => Set<InvoiceItem>();
+        public DbSet<InvoiceAdjustment> InvoiceAdjustments => Set<InvoiceAdjustment>();
         public DbSet<Payment> Payments => Set<Payment>();
         public DbSet<Expense> Expenses => Set<Expense>();
         public DbSet<User> Users => Set<User>();

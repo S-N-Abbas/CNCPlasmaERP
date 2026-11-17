@@ -192,6 +192,9 @@ namespace CNCPlasmaERP.Data.Migrations
                     b.Property<DateTime>("EntryDate")
                         .HasColumnType("datetime2");
 
+                    b.Property<int?>("InvoiceAdjustmentId")
+                        .HasColumnType("int");
+
                     b.Property<int?>("InvoiceId")
                         .HasColumnType("int");
 
@@ -215,6 +218,10 @@ namespace CNCPlasmaERP.Data.Migrations
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("InvoiceAdjustmentId")
+                        .IsUnique()
+                        .HasFilter("[InvoiceAdjustmentId] IS NOT NULL");
 
                     b.HasIndex("InvoiceId")
                         .IsUnique()
@@ -299,6 +306,10 @@ namespace CNCPlasmaERP.Data.Migrations
                     b.Property<int>("CustomerId")
                         .HasColumnType("int");
 
+                    b.Property<decimal>("DiscountAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<decimal>("GrandTotal")
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
@@ -319,6 +330,10 @@ namespace CNCPlasmaERP.Data.Migrations
 
                     b.Property<string>("Notes")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("OtherCharges")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("PaidAmount")
                         .HasPrecision(18, 2)
@@ -358,6 +373,78 @@ namespace CNCPlasmaERP.Data.Migrations
                         .IsUnique();
 
                     b.ToTable("Invoices", (string)null);
+                });
+
+            modelBuilder.Entity("CNCPlasmaERP.Core.Entities.InvoiceAdjustment", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("AdjustedByUserId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("AdjustmentDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("InvoiceId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<decimal>("NewDiscountAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("NewGrandTotal")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("NewOtherCharges")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("NewTaxAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("PreviousDiscountAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("PreviousGrandTotal")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("PreviousOtherCharges")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("PreviousTaxAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AdjustedByUserId");
+
+                    b.HasIndex("InvoiceId", "AdjustmentDate");
+
+                    b.ToTable("InvoiceAdjustments", (string)null);
                 });
 
             modelBuilder.Entity("CNCPlasmaERP.Core.Entities.InvoiceItem", b =>
@@ -1154,6 +1241,11 @@ namespace CNCPlasmaERP.Data.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("CNCPlasmaERP.Core.Entities.InvoiceAdjustment", "InvoiceAdjustment")
+                        .WithMany()
+                        .HasForeignKey("InvoiceAdjustmentId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("CNCPlasmaERP.Core.Entities.Invoice", "Invoice")
                         .WithMany()
                         .HasForeignKey("InvoiceId")
@@ -1167,6 +1259,8 @@ namespace CNCPlasmaERP.Data.Migrations
                     b.Navigation("Customer");
 
                     b.Navigation("Invoice");
+
+                    b.Navigation("InvoiceAdjustment");
 
                     b.Navigation("Payment");
                 });
@@ -1205,6 +1299,24 @@ namespace CNCPlasmaERP.Data.Migrations
                     b.Navigation("Customer");
 
                     b.Navigation("Job");
+                });
+
+            modelBuilder.Entity("CNCPlasmaERP.Core.Entities.InvoiceAdjustment", b =>
+                {
+                    b.HasOne("CNCPlasmaERP.Core.Entities.User", "AdjustedByUser")
+                        .WithMany()
+                        .HasForeignKey("AdjustedByUserId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("CNCPlasmaERP.Core.Entities.Invoice", "Invoice")
+                        .WithMany("Adjustments")
+                        .HasForeignKey("InvoiceId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("AdjustedByUser");
+
+                    b.Navigation("Invoice");
                 });
 
             modelBuilder.Entity("CNCPlasmaERP.Core.Entities.InvoiceItem", b =>
@@ -1429,6 +1541,8 @@ namespace CNCPlasmaERP.Data.Migrations
 
             modelBuilder.Entity("CNCPlasmaERP.Core.Entities.Invoice", b =>
                 {
+                    b.Navigation("Adjustments");
+
                     b.Navigation("Items");
 
                     b.Navigation("Payments");

@@ -66,6 +66,7 @@
             <Grid Visibility="{Binding SelectedInvoiceDetail, Converter={StaticResource NullToVisibilityConverter}}">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
                     <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
 
@@ -104,6 +105,48 @@
 
                 <!-- Document Preview Frame -->
                 <Border Grid.Row="1"
+                        Padding="10"
+                        Margin="0,0,0,10"
+                        CornerRadius="4"
+                        BorderBrush="{DynamicResource MahApps.Brushes.Gray8}"
+                        BorderThickness="1"
+                        IsEnabled="{Binding IsAdjustable}">
+                    <StackPanel>
+                        <TextBlock Text="Invoice correction" FontWeight="SemiBold" Margin="0,0,0,6"/>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="150"/>
+                                <ColumnDefinition Width="150"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="130"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBox Grid.Column="0" Text="{Binding AdjustedOtherCharges, Converter={StaticResource DecimalTextConverter}, UpdateSourceTrigger=PropertyChanged}"
+                                     mah:TextBoxHelper.Watermark="Other charges" Margin="0,0,6,0"/>
+                            <TextBox Grid.Column="1" Text="{Binding AdjustedDiscountAmount, Converter={StaticResource DecimalTextConverter}, UpdateSourceTrigger=PropertyChanged}"
+                                     mah:TextBoxHelper.Watermark="Discount" Margin="0,0,6,0"/>
+                            <TextBox Grid.Column="2" Text="{Binding AdjustmentReason, UpdateSourceTrigger=PropertyChanged}"
+                                     mah:TextBoxHelper.Watermark="Required reason for correction" Margin="0,0,6,0"/>
+                            <Button Grid.Column="3" Content="Save Correction" Command="{Binding SaveAdjustmentCommand}"
+                                    Style="{StaticResource PrimaryButton}" IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}"/>
+                        </Grid>
+                        <TextBlock Text="{Binding ErrorMessage}" Foreground="#D92D20" Margin="0,5,0,0" TextWrapping="Wrap"/>
+                        <TextBlock Text="{Binding StatusMessage}" Foreground="#16804A" Margin="0,3,0,0" TextWrapping="Wrap"/>
+                        <Expander Header="Correction history" Margin="0,5,0,0">
+                            <DataGrid ItemsSource="{Binding AdjustmentHistory}" AutoGenerateColumns="False" IsReadOnly="True"
+                                      HeadersVisibility="Column" RowHeight="28" Height="90" BorderThickness="0"
+                                      Style="{StaticResource MahApps.Styles.DataGrid}">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Date" Binding="{Binding AdjustmentDate, StringFormat=dd-MMM-yyyy HH:mm}" Width="140"/>
+                                    <DataGridTextColumn Header="Previous total" Binding="{Binding PreviousGrandTotal, StringFormat=N2}" Width="125"/>
+                                    <DataGridTextColumn Header="New total" Binding="{Binding NewGrandTotal, StringFormat=N2}" Width="110"/>
+                                    <DataGridTextColumn Header="Reason" Binding="{Binding Reason}" Width="*"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </Expander>
+                    </StackPanel>
+                </Border>
+
+                <Border Grid.Row="2"
                         BorderBrush="{DynamicResource MahApps.Brushes.Gray8}"
                         BorderThickness="1"
                         CornerRadius="4"

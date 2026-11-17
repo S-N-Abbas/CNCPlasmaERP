@@ -21,6 +21,7 @@ namespace CNCPlasmaERP.Data
         private IGenericRepository<QuotationItem>? _quotationItems;
         private IGenericRepository<JobMaterialUsage>? _jobMaterialUsages;
         private IGenericRepository<InvoiceItem>? _invoiceItems;
+        private IGenericRepository<InvoiceAdjustment>? _invoiceAdjustments;
         private IGenericRepository<Payment>? _payments;
         private IGenericRepository<Expense>? _expenses;
         private IGenericRepository<User>? _users;
@@ -47,6 +48,7 @@ namespace CNCPlasmaERP.Data
         public IGenericRepository<QuotationItem> QuotationItems => _quotationItems ??= new GenericRepository<QuotationItem>(_context);
         public IGenericRepository<JobMaterialUsage> JobMaterialUsages => _jobMaterialUsages ??= new GenericRepository<JobMaterialUsage>(_context);
         public IGenericRepository<InvoiceItem> InvoiceItems => _invoiceItems ??= new GenericRepository<InvoiceItem>(_context);
+        public IGenericRepository<InvoiceAdjustment> InvoiceAdjustments => _invoiceAdjustments ??= new GenericRepository<InvoiceAdjustment>(_context);
         public IGenericRepository<Payment> Payments => _payments ??= new GenericRepository<Payment>(_context);
         public IGenericRepository<Expense> Expenses => _expenses ??= new GenericRepository<Expense>(_context);
         public IGenericRepository<User> Users => _users ??= new GenericRepository<User>(_context);

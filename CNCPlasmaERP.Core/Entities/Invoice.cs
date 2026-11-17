@@ -25,6 +25,9 @@ namespace CNCPlasmaERP.Core.Entities
 
         public decimal SubTotal { get; set; }
 
+        public decimal OtherCharges { get; set; }
+        public decimal DiscountAmount { get; set; }
+
         public bool TaxApplied { get; set; }
         public decimal TaxPercentage { get; set; }
         public decimal TaxAmount { get; set; }
@@ -43,5 +46,6 @@ namespace CNCPlasmaERP.Core.Entities
 
         public ICollection<InvoiceItem> Items { get; set; } = new List<InvoiceItem>();
         public ICollection<Payment> Payments { get; set; } = new List<Payment>();
+        public ICollection<InvoiceAdjustment> Adjustments { get; set; } = new List<InvoiceAdjustment>();
     }
 }

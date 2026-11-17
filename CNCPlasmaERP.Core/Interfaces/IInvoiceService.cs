@@ -20,5 +20,7 @@ namespace CNCPlasmaERP.Core.Interfaces
 
         /// <summary>Unpaid/partially-paid invoices for one customer — for the Payments screen's invoice picker.</summary>
         Task<IReadOnlyList<Invoice>> GetOutstandingInvoicesForCustomerAsync(int customerId);
+
+        Task AdjustInvoiceAsync(int invoiceId, decimal otherCharges, decimal discountAmount, string reason, int? adjustedByUserId);
     }
 }

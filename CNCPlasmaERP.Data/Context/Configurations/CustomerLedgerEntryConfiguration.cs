@@ -29,10 +29,16 @@ namespace CNCPlasmaERP.Data.Context.Configurations
                 .HasForeignKey(e => e.PaymentId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            builder.HasOne(e => e.InvoiceAdjustment)
+                .WithMany()
+                .HasForeignKey(e => e.InvoiceAdjustmentId)
+                .OnDelete(DeleteBehavior.Restrict);
+
             // Statements are always queried "for this customer, in date order".
             builder.HasIndex(e => new { e.CustomerId, e.EntryDate });
             builder.HasIndex(e => e.InvoiceId).IsUnique().HasFilter("[InvoiceId] IS NOT NULL");
             builder.HasIndex(e => e.PaymentId).IsUnique().HasFilter("[PaymentId] IS NOT NULL");
+            builder.HasIndex(e => e.InvoiceAdjustmentId).IsUnique().HasFilter("[InvoiceAdjustmentId] IS NOT NULL");
         }
     }
 }

@@ -32,6 +32,9 @@ namespace CNCPlasmaERP.Core.Entities
         public int? PaymentId { get; set; }
         public Payment? Payment { get; set; }
 
+        public int? InvoiceAdjustmentId { get; set; }
+        public InvoiceAdjustment? InvoiceAdjustment { get; set; }
+
         public string? Notes { get; set; }
     }
 }

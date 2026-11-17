@@ -15,19 +15,27 @@ namespace CNCPlasmaERP.UI.ViewModels
     {
         private readonly IInvoiceService _invoiceService;
         private readonly ISettingsService _settingsService;
+        private readonly ICurrentUserContext _currentUserContext;
 
         private AppSettings? _companySettings;
 
-        public InvoiceListViewModel(IInvoiceService invoiceService, ISettingsService settingsService, ILogger<InvoiceListViewModel> logger)
+        public InvoiceListViewModel(IInvoiceService invoiceService, ISettingsService settingsService, ICurrentUserContext currentUserContext, ILogger<InvoiceListViewModel> logger)
             : base(logger)
         {
             _invoiceService = invoiceService;
             _settingsService = settingsService;
+            _currentUserContext = currentUserContext;
 
             _ = LoadAsync();
         }
 
         public ObservableCollection<Invoice> Invoices { get; } = new();
+        public ObservableCollection<InvoiceAdjustment> AdjustmentHistory { get; } = new();
+
+        [ObservableProperty] private decimal adjustedOtherCharges;
+        [ObservableProperty] private decimal adjustedDiscountAmount;
+        [ObservableProperty] private string adjustmentReason = string.Empty;
+        [ObservableProperty] private bool isAdjustable;
 
         [ObservableProperty]
         private Invoice? selectedInvoice;
@@ -68,15 +76,42 @@ namespace CNCPlasmaERP.UI.ViewModels
             {
                 SelectedInvoiceDetail = null;
                 PrintPreviewData = null;
+                IsAdjustable = false;
+                AdjustmentHistory.Clear();
                 return;
             }
 
             SelectedInvoiceDetail = await _invoiceService.GetInvoiceWithDetailsAsync(SelectedInvoice.Id);
+            AdjustedOtherCharges = SelectedInvoiceDetail?.OtherCharges ?? 0;
+            AdjustedDiscountAmount = SelectedInvoiceDetail?.DiscountAmount ?? 0;
+            AdjustmentReason = string.Empty;
+            IsAdjustable = SelectedInvoiceDetail is not null && SelectedInvoiceDetail.Status != CNCPlasmaERP.Core.Enums.InvoiceStatus.Cancelled;
+            AdjustmentHistory.Clear();
+            if (SelectedInvoiceDetail is not null)
+            {
+                foreach (var adjustment in SelectedInvoiceDetail.Adjustments.OrderByDescending(a => a.AdjustmentDate).ThenByDescending(a => a.Id))
+                    AdjustmentHistory.Add(adjustment);
+            }
             _companySettings ??= await _settingsService.GetSettingsAsync();
 
             PrintPreviewData = SelectedInvoiceDetail is not null
                 ? new InvoicePrintData { Invoice = SelectedInvoiceDetail, Settings = _companySettings! }
                 : null;
+        }
+
+        [RelayCommand]
+        private async Task SaveAdjustmentAsync()
+        {
+            if (SelectedInvoiceDetail is null) return;
+            var invoiceId = SelectedInvoiceDetail.Id;
+            await RunBusyAsync(async () =>
+            {
+                await _invoiceService.AdjustInvoiceAsync(invoiceId, AdjustedOtherCharges, AdjustedDiscountAmount,
+                    AdjustmentReason, _currentUserContext.CurrentUser?.Id);
+                StatusMessage = $"Invoice {SelectedInvoiceDetail?.InvoiceNumber} correction saved.";
+                AdjustmentReason = string.Empty;
+                await LoadListDataAsync();
+            });
         }
     }
 }

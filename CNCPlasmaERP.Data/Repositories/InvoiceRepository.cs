@@ -22,6 +22,7 @@ namespace CNCPlasmaERP.Data.Repositories
                 .Include(i => i.Job)
                 .Include(i => i.Items)
                 .Include(i => i.Payments)
+                .Include(i => i.Adjustments)
                 .FirstOrDefaultAsync(i => i.Id == invoiceId);
 
         public async Task<IReadOnlyList<Invoice>> GetByCustomerAsync(int customerId) =>

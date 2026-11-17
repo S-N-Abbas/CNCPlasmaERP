@@ -12,6 +12,8 @@ namespace CNCPlasmaERP.Data.Context.Configurations
 
             builder.Property(i => i.InvoiceNumber).IsRequired().HasMaxLength(30);
             builder.Property(i => i.SubTotal).HasPrecision(18, 2);
+            builder.Property(i => i.OtherCharges).HasPrecision(18, 2);
+            builder.Property(i => i.DiscountAmount).HasPrecision(18, 2);
             builder.Property(i => i.TaxPercentage).HasPrecision(5, 2);
             builder.Property(i => i.TaxAmount).HasPrecision(18, 2);
             builder.Property(i => i.GrandTotal).HasPrecision(18, 2);

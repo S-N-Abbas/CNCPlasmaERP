@@ -23,6 +23,7 @@ namespace CNCPlasmaERP.Core.Interfaces
         IGenericRepository<QuotationItem> QuotationItems { get; }
         IGenericRepository<JobMaterialUsage> JobMaterialUsages { get; }
         IGenericRepository<InvoiceItem> InvoiceItems { get; }
+        IGenericRepository<InvoiceAdjustment> InvoiceAdjustments { get; }
         IGenericRepository<Payment> Payments { get; }
         IGenericRepository<Expense> Expenses { get; }
         IGenericRepository<User> Users { get; }

@@ -9,6 +9,7 @@ using CNCPlasmaERP.Core.Exceptions;
 using CNCPlasmaERP.Core.Enums;
 using CNCPlasmaERP.Core.Interfaces;
 using Microsoft.Extensions.Logging;
+using Microsoft.EntityFrameworkCore;
 
 namespace CNCPlasmaERP.Services
 {
@@ -204,6 +205,101 @@ namespace CNCPlasmaERP.Services
             return invoices
                 .Where(i => i.Status == InvoiceStatus.Unpaid || i.Status == InvoiceStatus.PartiallyPaid)
                 .ToList();
+        }
+
+        public async Task AdjustInvoiceAsync(int invoiceId, decimal otherCharges, decimal discountAmount, string reason, int? adjustedByUserId)
+        {
+            ServiceAuthorization.Require(_currentUserContext, Permission.ManageInvoicesPayments);
+            if (otherCharges < 0 || discountAmount < 0)
+                throw new BusinessValidationException("Other charges and discount cannot be negative.");
+            otherCharges = Math.Round(otherCharges, 2, MidpointRounding.AwayFromZero);
+            discountAmount = Math.Round(discountAmount, 2, MidpointRounding.AwayFromZero);
+            if (string.IsNullOrWhiteSpace(reason) || reason.Trim().Length < 5 || reason.Trim().Length > 500)
+                throw new BusinessValidationException("Enter a correction reason between 5 and 500 characters.");
+
+            _unitOfWork.DetachAllTrackedEntities();
+            await using var transaction = await _unitOfWork.BeginTransactionAsync(IsolationLevel.Serializable);
+            try
+            {
+                var invoice = await _unitOfWork.Invoices.Query()
+                    .Include(i => i.Customer)
+                    .FirstOrDefaultAsync(i => i.Id == invoiceId)
+                    ?? throw new KeyNotFoundException($"Invoice {invoiceId} not found.");
+                if (invoice.Status == InvoiceStatus.Cancelled)
+                    throw new BusinessValidationException("A cancelled invoice cannot be adjusted.");
+
+                var discountBase = invoice.SubTotal + otherCharges;
+                if (discountAmount > discountBase)
+                    throw new BusinessValidationException("Discount cannot exceed the subtotal plus other charges.");
+
+                var taxableAmount = invoice.SubTotal + otherCharges - discountAmount;
+                var taxAmount = invoice.TaxApplied
+                    ? Math.Round(taxableAmount * invoice.TaxPercentage / 100m, 2, MidpointRounding.AwayFromZero)
+                    : 0m;
+                var grandTotal = taxableAmount + taxAmount;
+                if (grandTotal <= 0)
+                    throw new BusinessValidationException("The corrected invoice total must remain greater than zero.");
+                if (grandTotal < invoice.PaidAmount)
+                    throw new BusinessValidationException($"The corrected total ({grandTotal:N2}) cannot be less than the amount already paid ({invoice.PaidAmount:N2}).");
+
+                if (otherCharges == invoice.OtherCharges && discountAmount == invoice.DiscountAmount)
+                    throw new BusinessValidationException("There are no invoice changes to save.");
+
+                var oldTotal = invoice.GrandTotal;
+                var delta = grandTotal - oldTotal;
+                var adjustment = new InvoiceAdjustment
+                {
+                    Invoice = invoice,
+                    AdjustmentDate = DateTime.Now,
+                    PreviousOtherCharges = invoice.OtherCharges,
+                    NewOtherCharges = otherCharges,
+                    PreviousDiscountAmount = invoice.DiscountAmount,
+                    NewDiscountAmount = discountAmount,
+                    PreviousTaxAmount = invoice.TaxAmount,
+                    NewTaxAmount = taxAmount,
+                    PreviousGrandTotal = oldTotal,
+                    NewGrandTotal = grandTotal,
+                    Reason = reason.Trim(),
+                    AdjustedByUserId = adjustedByUserId
+                };
+                await _unitOfWork.InvoiceAdjustments.AddAsync(adjustment);
+
+                invoice.OtherCharges = otherCharges;
+                invoice.DiscountAmount = discountAmount;
+                invoice.TaxAmount = taxAmount;
+                invoice.GrandTotal = grandTotal;
+                invoice.Status = invoice.PaidAmount >= grandTotal
+                    ? InvoiceStatus.Paid
+                    : invoice.PaidAmount > 0 ? InvoiceStatus.PartiallyPaid : InvoiceStatus.Unpaid;
+
+                var customer = await _unitOfWork.Customers.GetByIdAsync(invoice.CustomerId)
+                    ?? throw new KeyNotFoundException($"Customer {invoice.CustomerId} not found.");
+                customer.CurrentBalance += delta;
+                _unitOfWork.Customers.Update(customer);
+
+                await _unitOfWork.LedgerEntries.AddAsync(new CustomerLedgerEntry
+                {
+                    CustomerId = customer.Id,
+                    EntryDate = adjustment.AdjustmentDate,
+                    Type = TransactionType.Adjustment,
+                    Debit = delta > 0 ? delta : 0,
+                    Credit = delta < 0 ? -delta : 0,
+                    RunningBalance = customer.CurrentBalance,
+                    InvoiceAdjustment = adjustment,
+                    Notes = $"Invoice {invoice.InvoiceNumber} correction: {adjustment.Reason}"
+                });
+
+                await _unitOfWork.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                _logger.LogInformation("Invoice {InvoiceNumber} corrected by {Delta} for reason: {Reason}", invoice.InvoiceNumber, delta, adjustment.Reason);
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                _unitOfWork.DetachAllTrackedEntities();
+                throw;
+            }
         }
     }
 }
